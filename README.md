@@ -8,3 +8,6 @@
 
 ### dev env
 - use TUNNEL : http://www.tunnel.mobi/
+```
+ngrok -config ngrok.cfg -subdomain weixin_vote 8080
+```
