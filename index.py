@@ -33,8 +33,13 @@ class MainHandler(tornado.web.RequestHandler):
             self.write("failed")
 
     def post(self, *args, **kwargs):
-        print self.request.body
-        self.write("success")
+        # todo: 设为安全模式，并解密消息
+        msg = xml2dict(self.request.body)
+        if msg['MsgType'] == 'text':
+            # weixin.encrypt_msg()
+            self.write("success")
+        else:
+            self.write("success")
 
 
 settings = {

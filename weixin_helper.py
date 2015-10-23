@@ -6,7 +6,7 @@ import json
 import threading
 import time
 import httplib2
-from xml.etree import ElementTree
+from xml.etree import cElementTree
 from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
 
 __author__ = 'nekocode'
@@ -14,7 +14,7 @@ __author__ = 'nekocode'
 
 def xml2dict(self, xml):
     # 将 xml 转为 dict
-    return dict((child.tag, child.text) for child in ElementTree.fromstring(xml))
+    return dict((child.tag, child.text) for child in cElementTree.fromstring(xml))
 
 
 class WeixinHelper:
