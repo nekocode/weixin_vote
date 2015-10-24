@@ -2,24 +2,16 @@
 # -*- coding: utf-8 -*-
 import os
 import tornado
-import tornado.web
+from tornado.web import Application, RequestHandler
 from tornado.template import Template
 from weixin_helper import WeixinHelper, xml2dict, WeixinRefreshATKWorker
 
 __author__ = 'nekocode'
 
-invite_account = {
-    'wxfcc58491aa0b07d6': WeixinHelper({
-        'app_id': 'wxfcc58491aa0b07d6',
-        'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
-        'token': 'nekocode',
-        'aes_key': "wRR2E0BcY1nrniIe1gf8Otx8DtDG6ibOAYNHZilzakv",
-
-        'vote_account_app_id': None
-    })
+invite_accounts = {
 }
 
-vote_account = {
+vote_accounts = {
     'wxfcc58491aa0b07d6': WeixinHelper({
         'app_id': 'wxfcc58491aa0b07d6',
         'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
@@ -31,15 +23,19 @@ vote_account = {
 }
 
 
-class WeixinHandler(tornado.web.RequestHandler):
+class WeixinHandler(RequestHandler):
+    def __init__(self, _application, request, **kwargs):
+        RequestHandler.__init__(self, _application, request)
+        self.accounts = kwargs['accounts']
+
     def data_received(self, chunk):
         pass
 
     def get(self, appid):
-        if appid not in invite_account:
+        if appid not in self.accounts:
             self.write('failed')
             return
-        weixin = invite_account[appid]
+        weixin = self.accounts[appid]
 
         signature = self.get_argument("signature")
         timestamp = self.get_argument("timestamp")
@@ -52,63 +48,43 @@ class WeixinHandler(tornado.web.RequestHandler):
             self.write("failed")
 
     def post(self, appid):
-        if appid not in invite_account:
+        if appid not in self.accounts:
             self.write('failed')
             return
-        weixin = invite_account[appid]
+        weixin = self.accounts[appid]
 
         # msg = xml2dict(weixin.decrypt_xml(self.request.body))  todo: 解密
         msg = xml2dict(self.request.body)
         print msg
         if msg['MsgType'] == 'text':
-            from_user = msg['FromUserName']
-            to_user = msg['ToUserName']
+            user = msg['FromUserName']
+            our = msg['ToUserName']
 
             if msg['Content'] == 'h':
-                reply_msg = weixin.text_msg(from_user, to_user, '哈哈哈哈')
+                reply_msg = weixin.text_msg(user, our, 'hahah')
 
             else:
-                reply_msg = weixin.news_msg(from_user, to_user, [{
+                reply_msg = weixin.news_msg(user, our, [{
                     'title': '哈哈哈哈',
                     'description': '这是一个悲伤的消息',
                     'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',
                     'url': 'http://www.baidu.com'
                 }, {
                     'title': '哈哈哈哈',
-                    'url': 'http://www.baidu.com',
-                    'description': '然而并日了狗',
+                    'url': 'http://www.baidu.com'
                 }])
             print reply_msg
             self.write(reply_msg)
-            
+
         else:
             self.write('success')
 
 
-class InviteHandler(WeixinHandler):
+class ArticleHandler(RequestHandler):
     def data_received(self, chunk):
         pass
 
-    def get(self, appid):
-        WeixinHandler.get(self, appid)
-
-    def post(self, appid):
-        WeixinHandler.post(self, appid)
-
-
-class VoteHandler(WeixinHandler):
-    def data_received(self, chunk):
-        pass
-
-    def get(self, appid):
-        WeixinHandler.get(self, appid)
-
-    def post(self, appid):
-        WeixinHandler.post(self, appid)
-
-
-class NewsHandler(tornado.web.RequestHandler):
-    def data_received(self, chunk):
+    def get(self, article_id):
         pass
 
 
@@ -116,10 +92,10 @@ settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
 }
 
-application = tornado.web.Application([
-    (r'/invite/(.*)', InviteHandler),
-    (r'/vote/(.*)', VoteHandler),
-    (r'/news', NewsHandler)
+application = Application([
+    (r'/invite/(.*)', WeixinHandler, dict(accounts=invite_accounts)),
+    (r'/vote/(.*)', WeixinHandler, dict(accounts=vote_accounts)),
+    (r'/article/(.*)', ArticleHandler)
 ], **settings)
 
 

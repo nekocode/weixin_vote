@@ -40,7 +40,8 @@ class WeixinHelper:
         self.token = account['token']
         self.aes_key = account['aes_key']
 
-        self.access_token = None
+        self.access_token = 'LPxMvgpeMeMQNm-kvPtRPD1doNjqHym956V-Gu9Ok8TN0RV_hVCNktBgQa5tcx' \
+                            'UpHFVhyrcJ8BCtLcf5f8OWEh9R1w0duqdMKTb3jWPveIE'
         self.expires_in = 0     # 凭证有效时间，单位：秒
 
         self.http = httplib2.Http(timeout=5)
@@ -61,14 +62,32 @@ class WeixinHelper:
         rlt = json.loads(content)
 
         if 'errcode' in rlt:
+            self.deal_err(rlt)
             return False
         else:
             self.access_token = rlt['access_token']
             self.expires_in = rlt['expires_in']
             return True
 
-    def decrypt_xml(self):
-        pass
+    def get_user_info(self, open_id, lang='zh_CN'):
+        user_info_url = 'https://api.weixin.qq.com/cgi-bin/user/info?' \
+                        'access_token={0}&openid={1}&lang={2}' \
+                        .format(self.access_token, open_id, lang)
+        print user_info_url
+        response, content = self.http.request(user_info_url, method="GET")
+
+        rlt = json.loads(content)
+
+        if 'errcode' in rlt:
+            self.deal_err(rlt)
+            return None
+        else:
+            return rlt
+
+    def decrypt_xml(self, xml, arg_signature, arg_create_time, arg_nonce):
+        crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
+        rlt, decryp_xml = crypter.DecryptMsg(xml, arg_signature, arg_create_time, arg_nonce)
+        return decryp_xml
 
     def _encrypt_xml(self, xml, create_time):
         crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
@@ -81,14 +100,9 @@ class WeixinHelper:
 
     def text_msg(self, to_user, from_user, text, crypt=False):
         create_time = str(int(time.time()))
-        xml = """
-<xml>
-<ToUserName>{0}></ToUserName>
-<FromUserName>{1}></FromUserName>
-<CreateTime>{2}</CreateTime>
-<MsgType>text</MsgType>
-<Content>{3}</Content>
-</xml>""".format(_cdata(to_user), _cdata(from_user), create_time, _cdata(text))
+        xml = '<xml><ToUserName>{0}></ToUserName><FromUserName>{1}></FromUserName><CreateTime>{2}</CreateTime>' \
+              '<MsgType>text</MsgType><Content>{3}</Content></xml>'\
+              .format(_cdata(to_user), _cdata(from_user), create_time, _cdata(text))
         return self._encrypt_xml(xml, create_time) if crypt else xml
 
     def news_msg(self, to_user, from_user, news, crypt=False):
@@ -97,14 +111,9 @@ class WeixinHelper:
             return 'success'
 
         create_time = str(int(time.time()))
-        xml = """
-<xml>
-<ToUserName>{0}</ToUserName>
-<FromUserName>{1}</FromUserName>
-<CreateTime>{2}</CreateTime>
-<MsgType>news</MsgType>
-<ArticleCount>{3}</ArticleCount>
-<Articles>""".format(_cdata(to_user), _cdata(from_user), create_time, len(news))
+        xml = '<xml><ToUserName>{0}</ToUserName><FromUserName>{1}</FromUserName><CreateTime>{2}</CreateTime>' \
+              '<MsgType>news</MsgType><ArticleCount>{3}</ArticleCount><Articles>'\
+              .format(_cdata(to_user), _cdata(from_user), create_time, len(news))
 
         for new in news:
             xml += '<item><Title>' + _cdata(new['title']) + '</Title>'
@@ -118,6 +127,13 @@ class WeixinHelper:
 
         return self._encrypt_xml(xml, create_time) if crypt else xml
 
+    def deal_err(self, err_rlt):
+        if err_rlt['errcode'] == 42001:
+            # token 失效
+            self.refresh_access_token()
+
+        print err_rlt['errmsg']
+
 
 class WeixinRefreshATKWorker(threading.Thread):
     def __init__(self, weixin_helper):
@@ -126,8 +142,10 @@ class WeixinRefreshATKWorker(threading.Thread):
 
     def run(self):
         while True:
-            self.weixin_helper.refresh_access_token()
-            time.sleep(7000)
+            while not self.weixin_helper.refresh_access_token():
+                time.sleep(5)
+
+            time.sleep(self.weixin_helper.expires_in - 100)
 
 
 class AccountPropertyNotDefineException(Exception):
