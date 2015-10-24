@@ -3,6 +3,8 @@
 
 import hashlib
 import json
+import random
+import string
 import threading
 import time
 import httplib2
@@ -15,6 +17,16 @@ __author__ = 'nekocode'
 def xml2dict(xml):
     # 将 xml 转为 dict
     return dict((child.tag, child.text) for child in cElementTree.fromstring(xml))
+
+
+def nonce_str(length=10):
+    # 随机数
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+
+
+def _cdata(data):
+    # http://stackoverflow.com/questions/174890/how-to-output-cdata-using-elementtree
+    return '<![CDATA[%s]]>' % data.replace(']]>', ']]]]><![CDATA[>')
 
 
 class WeixinHelper:
@@ -55,13 +67,56 @@ class WeixinHelper:
             self.expires_in = rlt['expires_in']
             return True
 
-    def decrypt_msg(self):
+    def decrypt_xml(self):
         pass
 
-    def encrypt_msg(self):
+    def _encrypt_xml(self, xml, create_time):
         crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
-        rlt, encrypt_xml = crypter.EncryptMsg("xml", int(time.time()))
+        rlt, encrypt_xml = crypter.EncryptMsg(xml, nonce_str(), create_time)
+        if rlt != 0:
+            print 'WXBizMsgCrypt error:' + str(rlt)
+            return 'success'    # pass
+
         return encrypt_xml
+
+    def text_msg(self, to_user, from_user, text, crypt=False):
+        create_time = str(int(time.time()))
+        xml = """
+<xml>
+<ToUserName>{0}></ToUserName>
+<FromUserName>{1}></FromUserName>
+<CreateTime>{2}</CreateTime>
+<MsgType>text</MsgType>
+<Content>{3}</Content>
+</xml>""".format(_cdata(to_user), _cdata(from_user), create_time, _cdata(text))
+        return self._encrypt_xml(xml, create_time) if crypt else xml
+
+    def news_msg(self, to_user, from_user, news, crypt=False):
+        if type(news) is not list and len(news) > 10:
+            print 'create news msg error.'
+            return 'success'
+
+        create_time = str(int(time.time()))
+        xml = """
+<xml>
+<ToUserName>{0}</ToUserName>
+<FromUserName>{1}</FromUserName>
+<CreateTime>{2}</CreateTime>
+<MsgType>news</MsgType>
+<ArticleCount>{3}</ArticleCount>
+<Articles>""".format(_cdata(to_user), _cdata(from_user), create_time, len(news))
+
+        for new in news:
+            xml += '<item><Title>' + _cdata(new['title']) + '</Title>'
+            if 'description' in new:
+                xml += '<Description>' + _cdata(new['description']) + '</Description>'
+            if 'pic_url' in new:
+                xml += '<PicUrl>' + _cdata(new['description']) + '</PicUrl>'
+            xml += '<Url>' + _cdata(new['url']) + '</Url></item>'
+
+        xml += '</Articles></xml> '
+
+        return self._encrypt_xml(xml, create_time) if crypt else xml
 
 
 class WeixinRefreshATKWorker(threading.Thread):
