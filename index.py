@@ -3,12 +3,21 @@
 import os
 import tornado
 from tornado.web import Application, RequestHandler
-from tornado.template import Template
 from weixin_helper import WeixinHelper, xml2dict, WeixinRefreshATKWorker
 
 __author__ = 'nekocode'
 
-invite_accounts = {
+domain = 'http://weixin_vote.tunnel.mobi'
+
+sub_accounts = {
+    'wxfcc58491aa0b07d6': WeixinHelper({
+        'app_id': 'wxfcc58491aa0b07d6',
+        'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
+        'token': 'nekocode',
+        'aes_key': "wRR2E0BcY1nrniIe1gf8Otx8DtDG6ibOAYNHZilzakv",
+
+        'vote_account_id': 'wxfcc58491aa0b07d6'
+    })
 }
 
 vote_accounts = {
@@ -16,17 +25,16 @@ vote_accounts = {
         'app_id': 'wxfcc58491aa0b07d6',
         'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
         'token': 'nekocode',
-        'aes_key': "wRR2E0BcY1nrniIe1gf8Otx8DtDG6ibOAYNHZilzakv",
-
-        'invite_account_app_id': None
+        'aes_key': "wRR2E0BcY1nrniIe1gf8Otx8DtDG6ibOAYNHZilzakv"
     })
 }
 
 
-class WeixinHandler(RequestHandler):
+class MainHandler(RequestHandler):
     def __init__(self, _application, request, **kwargs):
         RequestHandler.__init__(self, _application, request)
         self.accounts = kwargs['accounts']
+        self.is_vote_account = kwargs['is_vote_account']
 
     def data_received(self, chunk):
         pass
@@ -63,39 +71,87 @@ class WeixinHandler(RequestHandler):
             if msg['Content'] == 'h':
                 reply_msg = weixin.text_msg(user, our, 'hahah')
 
-            else:
+            elif msg['Content'] == 'C':     # 邀请的公众号
                 reply_msg = weixin.news_msg(user, our, [{
-                    'title': '哈哈哈哈',
-                    'description': '这是一个悲伤的消息',
+                    'title': '你还差一步即可成功为【' + 'xxxx' + '】投票',
+                    'description': '查看目前排行榜',
+                    'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',  # todo：内链模板
+                    'url': 'http://www.baidu.com'
+                }, {
+                    'title': '▶点击此处完成投票操作',
+                    'url': domain + '/vote/' + appid  # todo: 外链
+                }, {
+                    'title': '点击此处查看排行榜~',
+                    'url': domain + '/rank/' + appid
+                }])
+
+            elif msg['Content'] == 'V':
+                reply_msg = weixin.news_msg(user, our, [{
+                    'title': '恭喜你为【' + 'xxxx' + '】投票成功!',
+                    'description': '查看目前排行榜',
+                    'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',  # todo：内链模板
+                    'url': 'http://www.baidu.com'
+                }, {
+                    'title': '▶点击此处获取邀请码',
+                    'url': domain + '/invite/' + appid  # todo: 外链
+                }, {
+                    'title': '点击此处查看排行榜~',
+                    'url': domain + '/rank/' + appid
+                }])
+
+            elif msg['Content'] == 'rank':
+                reply_msg = weixin.news_msg(user, our, [{
+                    'title': '排行榜',
+                    'description': '查看目前排行榜',
                     'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',
                     'url': 'http://www.baidu.com'
                 }, {
-                    'title': '哈哈哈哈',
+                    'title': '获取邀请码',
                     'url': 'http://www.baidu.com'
                 }])
-            print reply_msg
+
+            else:
+                reply_msg = 'success'
+
             self.write(reply_msg)
 
         else:
             self.write('success')
 
 
-class ArticleHandler(RequestHandler):
+class VoteHandler(RequestHandler):
     def data_received(self, chunk):
         pass
 
-    def get(self, article_id):
+    def get(self, app_id):
+        self.write('为了防止刷票，你的验证码是 V12345')
+
+
+class RankHandler(RequestHandler):
+    def data_received(self, chunk):
         pass
 
+    def get(self, app_id):
+        self.write('排行榜：' + app_id)
+
+
+class InviteHandler(RequestHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self, app_id):
+        self.write('你的邀请码')
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
 }
 
 application = Application([
-    (r'/invite/(.*)', WeixinHandler, dict(accounts=invite_accounts)),
-    (r'/vote/(.*)', WeixinHandler, dict(accounts=vote_accounts)),
-    (r'/article/(.*)', ArticleHandler)
+    (r'/sub_account/(.*)', MainHandler, dict(accounts=sub_accounts, is_vote_account=False)),
+    (r'/vote_account/(.*)', MainHandler, dict(accounts=vote_accounts, is_vote_account=True)),
+    (r'/vote/(.*)', VoteHandler),
+    (r'/rank/(.*)', RankHandler),
+    (r'/invite/(.*)', InviteHandler)
 ], **settings)
 
 
