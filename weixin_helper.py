@@ -12,17 +12,21 @@ from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
 __author__ = 'nekocode'
 
 
-def xml2dict(self, xml):
+def xml2dict(xml):
     # 将 xml 转为 dict
     return dict((child.tag, child.text) for child in cElementTree.fromstring(xml))
 
 
 class WeixinHelper:
-    def __init__(self, app_id, app_secret, token, aes_key):
-        self.app_id = app_id
-        self.app_secret = app_secret
-        self.token = token
-        self.aes_key = aes_key
+    def __init__(self, account):
+        if not ('app_id' in account and 'app_secret' in account and 'token' in account and 'aes_key' in account):
+            raise AccountPropertyNotDefineException
+
+        self.account = account
+        self.app_id = account['app_id']
+        self.app_secret = account['app_secret']
+        self.token = account['token']
+        self.aes_key = account['aes_key']
 
         self.access_token = None
         self.expires_in = 0     # 凭证有效时间，单位：秒
@@ -69,4 +73,8 @@ class WeixinRefreshATKWorker(threading.Thread):
         while True:
             self.weixin_helper.refresh_access_token()
             time.sleep(7000)
+
+
+class AccountPropertyNotDefineException(Exception):
+    pass
 
