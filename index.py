@@ -3,25 +3,27 @@
 import os
 import tornado
 from tornado.web import Application, RequestHandler
-from weixin_helper import WeixinHelper, xml2dict, WeixinRefreshATKWorker
+from vote_model import SchoolAccount, VoteAccount
+from weixin_helper import xml2dict, WeixinRefreshATKWorker
 
 __author__ = 'nekocode'
 
 domain = 'http://weixin_vote.tunnel.mobi'
 
+# 排行榜 http://vote.bbdfun.com/uc/top?wechatname=%E5%90%89%E7%8F%A0%E7%9F%A5%E9%81%93
+# http://dushu.xiaomi.com/#1
+
 sub_accounts = {
-    'wxfcc58491aa0b07d6': WeixinHelper({
+    'wxfcc58491aa0b07d6': SchoolAccount({
         'app_id': 'wxfcc58491aa0b07d6',
         'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
         'token': 'nekocode',
         'aes_key': "wRR2E0BcY1nrniIe1gf8Otx8DtDG6ibOAYNHZilzakv",
-
-        'vote_account_id': 'wxfcc58491aa0b07d6'
-    })
+    }, 'wxfcc58491aa0b07d6')
 }
 
 vote_accounts = {
-    'wxfcc58491aa0b07d6': WeixinHelper({
+    'wxfcc58491aa0b07d6': VoteAccount({
         'app_id': 'wxfcc58491aa0b07d6',
         'app_secret': 'd4624c36b6795d1d99dcf0547af5443d',
         'token': 'nekocode',
@@ -67,48 +69,65 @@ class MainHandler(RequestHandler):
         if msg['MsgType'] == 'text':
             user = msg['FromUserName']
             our = msg['ToUserName']
+            text = msg['Content']
 
-            if msg['Content'] == 'h':
-                reply_msg = weixin.text_msg(user, our, 'hahah')
+            if type(weixin) == VoteAccount:
+                if text.startwith('V'):
+                    vote_rlt = weixin.vote(text)
 
-            elif msg['Content'] == 'C':     # 邀请的公众号
-                reply_msg = weixin.news_msg(user, our, [{
-                    'title': '你还差一步即可成功为【' + 'xxxx' + '】投票',
-                    'description': '查看目前排行榜',
-                    'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',  # todo：内链模板
-                    'url': 'http://www.baidu.com'
-                }, {
-                    'title': '▶点击此处完成投票操作',
-                    'url': domain + '/vote/' + appid  # todo: 外链
-                }, {
-                    'title': '点击此处查看排行榜~',
-                    'url': domain + '/rank/' + appid
-                }])
+                    if vote_rlt == 0:   # 投票成功
+                        reply_msg = weixin.news_msg(user, our, [{
+                            'title': '恭喜你为【' + 'xxxx' + '】投票成功!',
+                            'description': '查看目前排行榜',
+                            'pic_url': 'http://mmbiz.qpic.cn/mmbiz/Wuhx7MUWdrdbtK3wdngeLY5uiaglJm9wi'
+                                       'bNgMzWB0WJS1HsOTomORJia3ibIJlJGCYFXzofdM6o4yXEXIUPic4oux0w/640'
+                                       '?wx_fmt=jpeg&tp=webp&wxfrom=5',  # todo：内链模板
+                            'url': 'http://www.baidu.com'
+                        }, {
+                            'title': '▶点击此处获取邀请码',
+                            'url': domain + '/invite/' + appid  # todo: 外链
+                        }, {
+                            'title': '点击此处查看排行榜~',
+                            'url': domain + '/rank/' + appid
+                        }])
 
-            elif msg['Content'] == 'V':
-                reply_msg = weixin.news_msg(user, our, [{
-                    'title': '恭喜你为【' + 'xxxx' + '】投票成功!',
-                    'description': '查看目前排行榜',
-                    'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',  # todo：内链模板
-                    'url': 'http://www.baidu.com'
-                }, {
-                    'title': '▶点击此处获取邀请码',
-                    'url': domain + '/invite/' + appid  # todo: 外链
-                }, {
-                    'title': '点击此处查看排行榜~',
-                    'url': domain + '/rank/' + appid
-                }])
+                    elif vote_rlt == -1:
+                        reply_msg = weixin.text_msg(user, our, '你的投票码有误，请尝试重新获取')
 
-            elif msg['Content'] == 'rank':
-                reply_msg = weixin.news_msg(user, our, [{
-                    'title': '排行榜',
-                    'description': '查看目前排行榜',
-                    'pic_url': 'http://img5.imgtn.bdimg.com/it/u=1478080219,1136989624&fm=21&gp=0.jpg',
-                    'url': 'http://www.baidu.com'
-                }, {
-                    'title': '获取邀请码',
-                    'url': 'http://www.baidu.com'
-                }])
+                    elif vote_rlt == -2:
+                        reply_msg = weixin.text_msg(user, our, '你已经在该校投过一次票了，'
+                                                               '快获取邀请码让你的小伙伴们来帮你投票吧')
+
+                elif text.startwith('Q'):
+                    # todo：提供所在学校的链接
+                    reply_msg = weixin.text_msg(user, our, '请将邀请码发给你的小伙伴，'
+                                                           '并在举办你所在学校比赛的子公众号内使用邀请码投票')
+
+                else:
+                    reply_msg = 'success'
+
+            elif type(weixin) == SchoolAccount:
+                if text.startwith('V'):
+                    reply_msg = weixin.news_msg(user, our, [{
+                        'title': '为防止刷票，请到该公众号下投票',
+                        'url': 'http://www.baidu.com'
+                    }])
+
+                elif text.startwith('C'):
+                    reply_msg = weixin.news_msg(user, our, [{
+                        'title': '你还差一步即可成功为【' + 'xxxx' + '】投票',
+                        'description': '查看目前排行榜',
+                        'pic_url': 'http://mmbiz.qpic.cn/mmbiz/Wuhx7MUWdrdbtK3wdngeLY5uiaglJm9wibN'
+                                    'gMzWB0WJS1HsOTomORJia3ibIJlJGCYFXzofdM6o4yXEXIUPic4oux0w/640?wx_'
+                                    'fmt=jpeg&tp=webp&wxfrom=5',  # todo：内链模板
+                        'url': 'http://www.baidu.com'
+                    }, {
+                        'title': '▶点击此处完成投票操作',
+                        'url': domain + '/vote/' + appid  # todo: 外链
+                    }, {
+                        'title': '点击此处查看排行榜~',
+                        'url': domain + '/rank/' + appid
+                    }])
 
             else:
                 reply_msg = 'success'
