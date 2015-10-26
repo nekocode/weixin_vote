@@ -73,7 +73,6 @@ class WeixinHelper:
         user_info_url = 'https://api.weixin.qq.com/cgi-bin/user/info?' \
                         'access_token={0}&openid={1}&lang={2}' \
                         .format(self.access_token, open_id, lang)
-        print user_info_url
         response, content = self.http.request(user_info_url, method="GET")
 
         rlt = json.loads(content)

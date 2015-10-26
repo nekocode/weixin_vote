@@ -57,7 +57,10 @@ class MainHandler(RequestHandler):
 
             if type(account) == VoteAccount:
                 if text.startwith('V'):
-                    vote_rlt = account.vote(text)
+                    user_info = account.get_user_info(user)
+
+                    vote_code = text[1:]
+                    vote_rlt = account.vote(vote_code, user, user_info['nickname'], user_info['headimgurl'])
 
                     if vote_rlt == 0:   # 投票成功
                         reply_msg = account.news_msg(user, our, [{
@@ -69,10 +72,10 @@ class MainHandler(RequestHandler):
                             'url': 'http://www.baidu.com'
                         }, {
                             'title': '▶点击此处获取邀请码',
-                            'url': domain + '/invite_code/' + account.get_school_account_app_id(text)  # todo: 外链
+                            'url': domain + '/invite_code/' + account.get_school_account_app_id(vote_code)  # todo: 外链
                         }, {
                             'title': '点击此处查看排行榜~',
-                            'url': domain + '/rank/' + account.get_school_account_app_id(text)
+                            'url': domain + '/rank/' + account.get_school_account_app_id(vote_code)
                         }])
 
                     elif vote_rlt == -1:

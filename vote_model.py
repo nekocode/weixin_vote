@@ -13,22 +13,29 @@ class VoteAccount(WeixinHelper):
         self.school_accounts = dict()
 
     @staticmethod
-    def vote(vote_code):
-        vote_code_id = vote_code[1:]
-        if vote_code_id not in vote_codes:
+    def vote(vote_code, open_id, nick_name, avatar_url):
+        if vote_code not in vote_codes:
             return -1   # 投票码有误
 
-        vote_codes[vote_code_id][1] = True
-        db.execute("update vote_codes vc set vc.token = '111', vc.aes_key = '111' where vc.class_id=")
+        class_id = vote_codes[vote_code].class_id
+        vote_codes[vote_code].voted = True
+        db.update("update vote_codes vc set vc.voted = true where vc.class_id=%d" % class_id)
 
-    def get_school_account_app_id(self, vote_code):
-        pass
+        classes[class_id].voting_count += 1
+        db.update("update classes cl set cl.voting_count = cl.voting_count+1 where cl.id=%d" % class_id)
 
-    def get_classes_rank(self):
-        pass
+        # todo: voted_people 也要做处理 !!!!
+        invite_id = db.insert("insert ")
+        vote_peoples[open_id] = VotedPeople(invite_id, open_id)
 
-    def get_person_rank(self):
-        pass
+        return 0
+
+    @staticmethod
+    def get_school_account_app_id(vote_code):
+        class_id = vote_codes[vote_code].class_id
+        _class = classes[class_id]
+        school_account = school_accounts[_class.school_acount_id]
+        return school_account.app_id
 
 
 class SchoolAccount(WeixinHelper):
@@ -55,24 +62,28 @@ class SchoolAccount(WeixinHelper):
 
 
 class Class:
-    def __init__(self, class_id, class_name, voting_count):
+    def __init__(self, class_id, class_name, voting_count, school_acount_id):
         self.class_id = class_id
         self.class_name = class_name
         self.voting_count = voting_count
         self.voted_people = dict()
+        self.school_acount_id = school_acount_id
 
 
 class VotedPeople:
-    def __init__(self, invite_id, open_id, nickname, avatar_url, inviting_count):
+    def __init__(self, invite_id, open_id, nickname, avatar_url, inviting_count, class_id):
         self.invite_id = invite_id
         self.open_id = open_id
         self.nickname = nickname
         self.avatar_url = avatar_url
         self.inviting_count = inviting_count
+        self.class_id = class_id
 
 
 school_accounts = dict()
 vote_accounts = dict()
+classes = dict()
+vote_peoples = dict()
 vote_codes = dict()     # class_id, voted
 db = None
 
@@ -106,16 +117,18 @@ def init_db():
 
     rlt = db.query("select * from classes")
     for class_info in rlt:
-        _class = Class(class_info.id, class_info.class_name, class_info.voting_count)
+        _class = Class(class_info.id, class_info.class_name, class_info.voting_count, class_info.school_account_id)
 
+        classes[_class.class_id] = _class
         school_accounts[class_info.school_account_id].classes[class_info.id] = _class
 
-        voted_people_rlt = db.query("select * from voted_people")
-        for voted_people_info in voted_people_rlt:
-            voted_people = VotedPeople(voted_people_info.id, voted_people_info.open_id, voted_people_info.nickname,
-                                       voted_people_info.avatar_url, voted_people_info.inviting_count)
+    rlt = db.query("select * from voted_people")
+    for voted_people_info in rlt:
+        voted_people = VotedPeople(voted_people_info.id, voted_people_info.open_id, voted_people_info.nickname,
+                                   voted_people_info.avatar_url, voted_people_info.inviting_count, voted_people_info.class_id)
 
-            _class.voted_people[voted_people_info.id] = voted_people
+        vote_peoples[voted_people_info.id] = voted_people
+        classes[voted_people_info.class_id].voted_people[voted_people_info.id] = voted_people
 
     rlt = db.query("select * from vote_codes")
     for vote_code in rlt:
