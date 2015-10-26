@@ -3,7 +3,7 @@
 import os
 import tornado
 from tornado.web import Application, RequestHandler
-from vote_model import SchoolAccount, VoteAccount, sub_accounts, vote_accounts
+from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
 from weixin_helper import xml2dict, WeixinRefreshATKWorker
 
 __author__ = 'nekocode'
@@ -78,10 +78,6 @@ class MainHandler(RequestHandler):
                     elif vote_rlt == -1:
                         reply_msg = account.text_msg(user, our, '你的投票码有误，请尝试重新获取')
 
-                    elif vote_rlt == -2:
-                        reply_msg = account.text_msg(user, our, '你已经在该校投过一次票了，'
-                                                                '快获取邀请码让你的小伙伴们来帮你投票吧')
-
                 elif text.startwith('Q'):
                     # todo：提供所在学校的链接
                     reply_msg = account.text_msg(user, our, '请将邀请码发给你的小伙伴，'
@@ -118,11 +114,13 @@ class VoteCodeHandler(RequestHandler):
         pass
 
     def get(self, app_id):
-        if app_id not in sub_accounts:
+        if app_id not in school_accounts:
             self.write('failed')
 
-        account = sub_accounts[app_id]
-        self.write('为了防止刷票，你的验证码是 V12345')
+        account = school_accounts[app_id]
+        vote_code = account.get_vote_code()
+
+        self.write('为了防止刷票，你的投票码是 ' + vote_code)
 
 
 class RankHandler(RequestHandler):
@@ -130,10 +128,13 @@ class RankHandler(RequestHandler):
         pass
 
     def get(self, app_id):
-        if app_id not in sub_accounts:
+        if app_id not in school_accounts:
             self.write('failed')
 
-        account = sub_accounts[app_id]
+        account = school_accounts[app_id]
+        class_rank = account.get_classes_rank()
+        person_rank = account.get_person_rank()
+
         self.write('排行榜：' + app_id)
 
 
@@ -142,19 +143,21 @@ class InviteCodeHandler(RequestHandler):
         pass
 
     def get(self, app_id):
-        if app_id not in sub_accounts:
+        if app_id not in school_accounts:
             self.write('failed')
 
-        account = sub_accounts[app_id]
-        self.write('你的邀请码')
+        account = school_accounts[app_id]
+        invite_code = account.get_invite_code()
+
+        self.write('你的邀请码为 ' + invite_code)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
 }
 
 application = Application([
-    (r'/sub_account/(.*)', MainHandler, dict(accounts=sub_accounts, is_vote_account=False)),
-    (r'/vote_account/(.*)', MainHandler, dict(accounts=vote_accounts, is_vote_account=True)),
+    (r'/sub_account/(.*)', MainHandler, dict(accounts=school_accounts)),
+    (r'/vote_account/(.*)', MainHandler, dict(accounts=vote_accounts)),
     (r'/vote_code/(.*)', VoteCodeHandler),
     (r'/rank/(.*)', RankHandler),
     (r'/invite_code/(.*)', InviteCodeHandler)
@@ -162,6 +165,8 @@ application = Application([
 
 
 if __name__ == '__main__':
+    cur = init_db()
+
     # 刷新 access token
     # for key, invite_weixin in invite_account.items():
     #     WeixinRefreshATKWorker(invite_weixin).start()
