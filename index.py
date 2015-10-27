@@ -15,7 +15,6 @@ class MainHandler(RequestHandler):
     def __init__(self, _application, request, **kwargs):
         RequestHandler.__init__(self, _application, request)
         self.accounts = kwargs['accounts']
-        self.is_vote_account = kwargs['is_vote_account']
 
     def data_received(self, chunk):
         pass

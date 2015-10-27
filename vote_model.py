@@ -132,7 +132,7 @@ def init_db(host_and_port, db_name, user, pwd):
     global db
     db = torndb.Connection(host_and_port, db_name, user, pwd)
 
-    create_tables()
+    create_tables(db_name)
 
     rlt = db.query("select * from vote_accounts")
     for account in rlt:
@@ -157,39 +157,39 @@ def init_db(host_and_port, db_name, user, pwd):
         school_accounts[account.app_id] = school_account
 
 
-def create_tables():
-    if if_table_exist('vote_accounts') == 0:
+def create_tables(db_name):
+    if if_table_exist(db_name, 'vote_accounts') == 0:
         db.execute("create table vote_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
                    "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512))")
 
-    if if_table_exist('school_accounts') == 0:
+    if if_table_exist(db_name, 'school_accounts') == 0:
         db.execute("create table school_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
                    "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), voting_count INTEGER, "
                    "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512), "
                    "intro_url VARCHAR(512), intro_img_url VARCHAR(512))")
 
-    if if_table_exist('classes') == 0:
+    if if_table_exist(db_name, 'classes') == 0:
         # 使用 id 做班级码
         db.execute("create table classes(id INTEGER PRIMARY KEY AUTO_INCREMENT, class_name VARCHAR(60), "
                    "voting_count INTEGER, school_account_id VARCHAR(20) NOT NULL)")
 
-    if if_table_exist('voted_people') == 0:
+    if if_table_exist(db_name, 'voted_people') == 0:
         # 使用 id 做邀请码
         db.execute("create table voted_people(id INTEGER PRIMARY KEY AUTO_INCREMENT, open_id VARCHAR(128) NOT NULL, "
                    "nickname VARCHAR(60), avatar_url VARCHAR(512), inviting_count INTEGER, "
                    "class_id INTEGER, class_name VARCHAR(60), school_account_id VARCHAR(20) NOT NULL)")
 
-    if if_table_exist('vote_codes') == 0:
+    if if_table_exist(db_name, 'vote_codes') == 0:
         # 使用 id 做投票码
         db.execute("create table vote_codes(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
                    "class_id INTEGER, voted BOOLEAN, invite_id INTEGER)")
 
 
-def if_table_exist(table_name):
+def if_table_exist(db_name, table_name):
     count = db.get("select count(*) as count from information_schema.tables "
-                   "where table_schema ='app_nekocode' and table_name ='" + table_name + "'")
+                   "where table_schema ='" + db_name + "' and table_name ='" + table_name + "'")
     return count.count
 
 
