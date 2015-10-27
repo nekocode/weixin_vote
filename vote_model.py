@@ -116,9 +116,9 @@ vote_accounts = dict()
 db = None
 
 
-def init_db():
+def init_db(host_and_port, db_name, user, pwd):
     global db
-    db = torndb.Connection('localhost', 'app_nekocode', 'root', 'root')
+    db = torndb.Connection(host_and_port, db_name, user, pwd)
 
     create_tables()
 
@@ -178,5 +178,5 @@ def if_table_exist(table_name):
 
 
 if __name__ == '__main__':
-    init_db()
+    init_db('localhost:3306', 'app_nekocode', 'root', 'root')
 

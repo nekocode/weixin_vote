@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 import os
 import tornado
-from tornado.escape import xhtml_escape
 from tornado.web import Application, RequestHandler
 from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
 from weixin_helper import xml2dict, WeixinRefreshATKWorker
 
 __author__ = 'nekocode'
 
-domain = 'http://weixin_vote.tunnel.mobi'
+domain = 'http://nekocodeweixin.sinaapp.com'
 
 
 class MainHandler(RequestHandler):
@@ -167,8 +166,8 @@ class RankHandler(RequestHandler):
 
         avatar_url = '/static/assets/avatar.jpg'    # todo
         school_name = '广州大学'     # todo
-        class_count = 157           # todo: len(class_rank_rows)
-        vote_total_count = 25187    # todo: account.voting_count
+        class_count = len(class_rank_rows)
+        vote_total_count = account.voting_count
 
         self.render("static/ranking.html",
                     class_rank_rows=class_rank_rows, person_rank_rows=person_rank_rows,
@@ -188,15 +187,22 @@ application = Application([
     (r'/rank/(.*)', RankHandler)
 ], **settings)
 
-if __name__ == '__main__':
-    cur = init_db()
+
+def server(host_and_port, db_name, user, pwd):
+    init_db(host_and_port, db_name, user, pwd)
 
     # 刷新 access token
-    # for key, invite_weixin in invite_account.items():
-    #     WeixinRefreshATKWorker(invite_weixin).start()
-    #
-    # for key, vote_weixin in vote_account.items():
-    #     WeixinRefreshATKWorker(vote_weixin).start()
+    for key, school_weixin in school_accounts.items():
+        WeixinRefreshATKWorker(school_weixin).start()
 
-    application.listen(8080)
-    tornado.ioloop.IOLoop.instance().start()
+    for key, vote_weixin in vote_accounts.items():
+        WeixinRefreshATKWorker(vote_weixin).start()
+
+    if __name__ == '__main__':
+        application.listen(8080)
+        tornado.ioloop.IOLoop.instance().start()
+
+
+if __name__ == '__main__':
+    server('localhost:3306', 'app_nekocode', 'root', 'root')
+
