@@ -10,31 +10,37 @@ class VoteAccount(WeixinHelper):
     def __init__(self, account_config):
         WeixinHelper.__init__(self, account_config)
 
-        self.school_accounts = dict()
-
     @staticmethod
-    def vote(vote_code, open_id, nick_name, avatar_url):
-        if vote_code not in vote_codes:
+    def vote(vote_code, open_id, user_info):
+        row = db.get("select * from vote_codes where id=%d" % vote_code)
+
+        if row is None:
             return -1   # 投票码有误
 
-        class_id = vote_codes[vote_code].class_id
-        vote_codes[vote_code].voted = True
-        db.update("update vote_codes vc set vc.voted = true where vc.class_id=%d" % class_id)
+        if row.voted:
+            return -2   # 投票码已使用
 
-        classes[class_id].voting_count += 1
-        db.update("update classes cl set cl.voting_count = cl.voting_count+1 where cl.id=%d" % class_id)
+        row2 = db.query("select * from voted_people where open_id=%s and class_id=%d" % (open_id, row.class_id))
 
-        # todo: voted_people 也要做处理 !!!!
-        invite_id = db.insert("insert ")
-        vote_peoples[open_id] = VotedPeople(invite_id, open_id)
+        if len(row2) != 0:
+            return -3   # 你已经为该班级投过票了
 
-        return 0
+        db.update("update vote_codes set voted=true where id=%d" % vote_code)
+        db.update("update classes set voting_count=voting_count+1 where id=%d" % row.class_id)
+        row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, class_id) "
+                           "values('%s','%s', '%s', %d, %d)" %
+                           (open_id, user_info['nickname'], user_info['headimgurl'], 0, row.class_id))
+
+        if row.invite_id is not None:   # 是邀请而来
+            db.update("update voted_people set inviting_count=inviting_count+1 where id=%d" % row.invite_id)
+
+        return row_id   # 返回邀请码
 
     @staticmethod
     def get_school_account_app_id(vote_code):
-        class_id = vote_codes[vote_code].class_id
-        _class = classes[class_id]
-        school_account = school_accounts[_class.school_acount_id]
+        row = db.get("select * from vote_codes where id=%d" % vote_code)
+        school_account = db.get("select * from classes where id=%d" % row.class_id)
+
         return school_account.app_id
 
 
@@ -45,14 +51,25 @@ class SchoolAccount(WeixinHelper):
         self.vote_account_id = vote_account_id
         self.school_name = school_name
         self.avatar_url = avatar_url
-        self.classes = dict()
 
-    def get_vote_code(self):
-        # todo：获取投票码
-        pass
+    @staticmethod
+    def get_vote_code(code_with_prefix):
+        try:
+            if code_with_prefix.startwith('C'):
+                class_id = int(code_with_prefix[1:])
+                row_id = db.insert("insert to vote_codes(class_id, voted) values(%d, false)" % class_id)
+                return row_id   # 返回投票码
 
-    def get_invite_code(self):
-        pass
+            else:   # start with 'I' 是邀请码的话
+                invite_id = int(code_with_prefix[1:])
+                row = db.get("select * from voted_people where id=%d" % invite_id)
+                row_id = db.insert("insert to vote_codes(class_id, voted, invite_id) values(%d, false, %d)" %
+                                   (row.class_id, invite_id))
+                return row_id   # 返回投票码
+
+                pass
+        except ValueError:
+            return None
 
     def get_classes_rank(self):
         pass
@@ -66,7 +83,6 @@ class Class:
         self.class_id = class_id
         self.class_name = class_name
         self.voting_count = voting_count
-        self.voted_people = dict()
         self.school_acount_id = school_acount_id
 
 
@@ -82,9 +98,6 @@ class VotedPeople:
 
 school_accounts = dict()
 vote_accounts = dict()
-classes = dict()
-vote_peoples = dict()
-vote_codes = dict()     # class_id, voted
 db = None
 
 
@@ -113,26 +126,6 @@ def init_db():
         }, account.vote_account_id, account.school_name, account.avatar_url)
 
         school_accounts[account.app_id] = school_account
-        vote_accounts[account.vote_account_id].school_accounts[account.app_id] = school_account
-
-    rlt = db.query("select * from classes")
-    for class_info in rlt:
-        _class = Class(class_info.id, class_info.class_name, class_info.voting_count, class_info.school_account_id)
-
-        classes[_class.class_id] = _class
-        school_accounts[class_info.school_account_id].classes[class_info.id] = _class
-
-    rlt = db.query("select * from voted_people")
-    for voted_people_info in rlt:
-        voted_people = VotedPeople(voted_people_info.id, voted_people_info.open_id, voted_people_info.nickname,
-                                   voted_people_info.avatar_url, voted_people_info.inviting_count, voted_people_info.class_id)
-
-        vote_peoples[voted_people_info.id] = voted_people
-        classes[voted_people_info.class_id].voted_people[voted_people_info.id] = voted_people
-
-    rlt = db.query("select * from vote_codes")
-    for vote_code in rlt:
-        vote_codes[vote_code.id] = vote_code
 
 
 def create_tables():
@@ -157,7 +150,8 @@ def create_tables():
 
     if if_table_exist('vote_codes') == 0:
         # 使用 id 做投票码
-        db.execute("create table vote_codes(id INTEGER PRIMARY KEY AUTO_INCREMENT, class_id INTEGER, voted BOOLEAN)")
+        db.execute("create table vote_codes(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                   "class_id INTEGER, voted BOOLEAN, invite_id INTEGER)")
 
 
 def if_table_exist(table_name):
