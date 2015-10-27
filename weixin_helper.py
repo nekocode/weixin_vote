@@ -9,7 +9,7 @@ import threading
 import time
 import httplib2
 from xml.etree import cElementTree
-from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
+# from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
 
 __author__ = 'nekocode'
 
@@ -83,18 +83,20 @@ class WeixinHelper:
             return rlt
 
     def decrypt_xml(self, xml, arg_signature, arg_create_time, arg_nonce):
-        crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
-        rlt, decryp_xml = crypter.DecryptMsg(xml, arg_signature, arg_create_time, arg_nonce)
-        return decryp_xml
+        # crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
+        # rlt, decryp_xml = crypter.DecryptMsg(xml, arg_signature, arg_create_time, arg_nonce)
+        # return decryp_xml
+        return xml
 
     def _encrypt_xml(self, xml, create_time):
-        crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
-        rlt, encrypt_xml = crypter.EncryptMsg(xml, nonce_str(), create_time)
-        if rlt != 0:
-            print 'WXBizMsgCrypt error:' + str(rlt)
-            return 'success'    # pass
-
-        return encrypt_xml
+        # crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
+        # rlt, encrypt_xml = crypter.EncryptMsg(xml, nonce_str(), create_time)
+        # if rlt != 0:
+        #     print 'WXBizMsgCrypt error:' + str(rlt)
+        #     return 'success'    # pass
+        #
+        # return encrypt_xml
+        return xml
 
     def text_msg(self, to_user, from_user, text, crypt=False):
         create_time = str(int(time.time()))
