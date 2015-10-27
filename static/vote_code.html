@@ -46,10 +46,10 @@
 <body>
   <div class="container">
     您的验证码是
-    <div class="captcha">V6974937</div>
+    <div class="captcha">{{ vote_code }}</div>
     （长按可复制）
-    <div class="qrcode"><img src="assets/qrcode.png" alt="二维码"></div>
-    <div class="name">校园大板凳（xybandeng）</div>
+    <div class="qrcode"><img src="{{ qrcode_url }}" alt="二维码"></div>
+    <div class="name">{{ account_name }}（{{ account_id }}）</div>
     <div>（长按二维码可识别）</div>
   </div>
 </body>

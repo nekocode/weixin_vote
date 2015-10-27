@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import tornado
+from tornado.escape import xhtml_escape
 from tornado.web import Application, RequestHandler
 from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
 from weixin_helper import xml2dict, WeixinRefreshATKWorker
@@ -9,10 +10,6 @@ from weixin_helper import xml2dict, WeixinRefreshATKWorker
 __author__ = 'nekocode'
 
 domain = 'http://weixin_vote.tunnel.mobi'
-
-
-# 排行榜 http://vote.bbdfun.com/uc/top?wechatname=%E5%90%89%E7%8F%A0%E7%9F%A5%E9%81%93
-# http://dushu.xiaomi.com/#1
 
 
 class MainHandler(RequestHandler):
@@ -138,8 +135,12 @@ class VoteCodeHandler(RequestHandler):
 
     def get(self, vote_code):
         vote_code = 'V' + str(vote_code)
+        qrcode_url = '/static/assets/qrcode.png'    # todo
+        account_name = '校园大板凳'                  # todo
+        account_id = 'xiaoyuan_band'                # todo
 
-        self.write('为了防止刷票，你的投票码是 ' + vote_code)
+        self.render("static/vote_code.html", vote_code=vote_code, qrcode_url=qrcode_url,
+                    account_name=account_name, account_id=account_id)
 
 
 class InviteCodeHandler(RequestHandler):
@@ -149,7 +150,7 @@ class InviteCodeHandler(RequestHandler):
     def get(self, invite_code):
         invite_code = 'I' + str(invite_code)
 
-        self.write('你的邀请码为 ' + invite_code)
+        self.render("static/invite_code.html", invite_code=invite_code)
 
 
 class RankHandler(RequestHandler):
@@ -158,13 +159,21 @@ class RankHandler(RequestHandler):
 
     def get(self, app_id):
         if app_id not in school_accounts:
-            self.write('你的打开方式出了点问题 ╮(╯_╰)╭')
-
+            self.write('打开姿势有误 ╮(╯_╰)╭')
+            return
         account = school_accounts[app_id]
         class_rank_rows = account.get_classes_rank()
-        person_rank_rows = account.get_person_rank()
+        person_rank_rows = account.get_person_rank()    # todo: add person.class_name
 
-        self.write('排行榜：')
+        avatar_url = '/static/assets/avatar.jpg'    # todo
+        school_name = '广州大学'     # todo
+        class_count = 157           # todo: len(class_rank_rows)
+        vote_total_count = 25187    # todo: account.voting_count
+
+        self.render("static/ranking.html",
+                    class_rank_rows=class_rank_rows, person_rank_rows=person_rank_rows,
+                    avatar_url=avatar_url, school_name=school_name, class_count=class_count,
+                    vote_total_count=vote_total_count)
 
 
 settings = {

@@ -24,15 +24,25 @@ class VoteAccount(WeixinHelper):
         if len(row2) != 0:
             return -3   # 你已经为该班级投过票了
 
+        # 销毁投票码 & 班级总票数 + 1
         db.update("update vote_codes set voted=true where id=%d" % vote_code)
         db.update("update classes set voting_count=voting_count+1 where id=%d" % row.class_id)
+
+        # 校园总票数 +1
+        class_row = db.get("select * from classes where id=%d" % row.class_id)
+        school_account_id = class_row.school_account_id
+        db.update("update school_accounts set voting_count=voting_count+1 where app_id=%s" % school_account_id)
+        school_accounts[school_account_id].voting_count += 1
+
+        # 添加个人投票记录，并返回 invite_id
         row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
                            "class_id, school_account_id) "
                            "values('%s','%s', '%s', %d, %d, %s)" %
                            (open_id, user_info['nickname'], user_info['headimgurl'], 0,
                             row.class_id, self.app_id))
 
-        if row.invite_id is not None:   # 是邀请而来
+        # 是邀请而来的话，邀请人邀请数 +1
+        if row.invite_id is not None:
             db.update("update voted_people set inviting_count=inviting_count+1 where id=%d" % row.invite_id)
 
         return row_id   # 返回邀请码
@@ -46,12 +56,13 @@ class VoteAccount(WeixinHelper):
 
 
 class SchoolAccount(WeixinHelper):
-    def __init__(self, account_config, vote_account_id, school_name, avatar_url):
+    def __init__(self, account_config, vote_account_id, school_name, avatar_url, voting_count):
         WeixinHelper.__init__(self, account_config)
 
         self.vote_account_id = vote_account_id
         self.school_name = school_name
         self.avatar_url = avatar_url
+        self.voting_count = voting_count
 
     @staticmethod
     def get_vote_code(code_with_prefix):
@@ -127,7 +138,7 @@ def init_db():
             'app_secret': account.app_secret,
             'token': account.token,
             'aes_key': account.aes_key
-        }, account.vote_account_id, account.school_name, account.avatar_url)
+        }, account.vote_account_id, account.school_name, account.avatar_url, account.voting_count)
 
         school_accounts[account.app_id] = school_account
 
@@ -140,7 +151,8 @@ def create_tables():
     if if_table_exist('school_accounts') == 0:
         db.execute("create table school_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
-                   "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), avatar_url VARCHAR(512))")
+                   "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), avatar_url VARCHAR(512), "
+                   "voting_count INTEGER)")
 
     if if_table_exist('classes') == 0:
         # 使用 id 做班级码

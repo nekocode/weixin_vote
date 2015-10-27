@@ -40,8 +40,7 @@ class WeixinHelper:
         self.token = account['token']
         self.aes_key = account['aes_key']
 
-        self.access_token = 'LPxMvgpeMeMQNm-kvPtRPD1doNjqHym956V-Gu9Ok8TN0RV_hVCNktBgQa5tcx' \
-                            'UpHFVhyrcJ8BCtLcf5f8OWEh9R1w0duqdMKTb3jWPveIE'
+        self.access_token = None
         self.expires_in = 0     # 凭证有效时间，单位：秒
 
         self.http = httplib2.Http(timeout=5)

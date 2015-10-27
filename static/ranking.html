@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, minal-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  <title>排行榜</title>
-  <link rel="stylesheet" href="assets/ranking.css">
+  <title>{{ school_name }}排行榜</title>
+  <link rel="stylesheet" href="/static/assets/ranking.css">
 </head>
 <body>
   <div class="school-info">
-    <img src="assets/avatar.jpg" alt="avatar" class="avatar">
+    <img src="{{ avatar_url }}" alt="avatar" class="avatar">
     <div>
-      <div class="name">吉林大学珠海学院</div>
-      <div class="class-count">班级数：<span>157</span></div>
-      <div class="votes">投票数：<span>24661</span></div>
+      <div class="name">{{ school_name }}</div>
+      <div class="class-count">班级数：<span>{{ class_count }}</span></div>
+      <div class="votes">投票数：<span>{{ vote_total_count }}</span></div>
     </div>
   </div>
   <ul class="nav-tab">
@@ -23,76 +23,25 @@
     <div class="wrapper">
       <div class="ranking1">
         <ol>
-          <li>外语系15级英语3班 <span>2302票</span></li>
-          <li>音乐舞蹈学院14级音乐表演3班 <span>2288票</span></li>
-          <li>物流系13级电子商务15班 <span>1188票</span></li>
-          <li>国贸系15级金融学22班 <span>811票</span></li>
-          <li>国贸系14级金融学24班 <span>800票</span></li>
-          <li>中文系15级汉语言文学4班 <span>713票</span></li>
-          <li>外语系15级朝鲜语13班 <span>699票</span></li>
-          <li>行政系13级社会工作8班 <span>533票</span></li>
-          <li>国贸系15级金融学17班 <span>412票</span></li>
-          <li>国贸系15级国贸专业2班 <span>31票</span></li>
-          <li>国贸系15级金融学20班 <span>3票</span></li>
+          {% for _class in class_rank_rows %}
+          <li>{{ _class.class_name }} <span>{{ _class.voting_count }}票</span></li>
+          {% end %}
         </ol>
       </div>
       <div class="ranking2">
         <ol>
+          {% for person in person_rank_rows %}
           <li>
-            <div class="name">歪歪<span class>(音乐舞蹈学院14级音乐表演3班)</span></div>
-            <div class="invitation-code">邀请码：QQ66882317</div>
-            <div class="votes">邀请票数：<span>1255</span></div>
+            <div class="name">{{ person.nickname }}<span class>({{ person.class_name }})</span></div>
+            <div class="invitation-code">邀请码：I{{ person.id }}</div>
+            <div class="votes">邀请票数：<span>{{ person.inviting_count }}</span></div>
           </li>
-          <li>
-            <div class="name">不敗の頑童<span class>(外语系15级英语3班)</span></div>
-            <div class="invitation-code">邀请码：QQ67424125</div>
-            <div class="votes">邀请票数：<span>997</span></div>
-          </li>
-          <li>
-            <div class="name">修泽<span class>(国贸系14级国贸专业10班)</span></div>
-            <div class="invitation-code">邀请码：QQ65943698</div>
-            <div class="votes">邀请票数：<span>172</span></div>
-          </li>
-          <li>
-            <div class="name">Vichu<span class>(物流系13级电子商务15班)</span></div>
-            <div class="invitation-code">邀请码：QQ65938999</div>
-            <div class="votes">邀请票数：<span>137</span></div>
-          </li>
-          <li>
-            <div class="name">Eating<span class>(工商系15级工商管理8班)</span></div>
-            <div class="invitation-code">邀请码：QQ66068942</div>
-            <div class="votes">邀请票数：<span>101</span></div>
-          </li>
-          <li>
-            <div class="name">据点<span class>(工商系15级工商管理10班)</span></div>
-            <div class="invitation-code">邀请码：QQ66045324</div>
-            <div class="votes">邀请票数：<span>79</span></div>
-          </li>
-          <li>
-            <div class="name">yougaa咯<span class>(外语系15级英语2班)</span></div>
-            <div class="invitation-code">邀请码：QQ67311567</div>
-            <div class="votes">邀请票数：<span>68</span></div>
-          </li>
-          <li>
-            <div class="name">☞荣荣荣荣☜<span class>(行政系14级劳保5班)</span></div>
-            <div class="invitation-code">邀请码：QQ66008310</div>
-            <div class="votes">邀请票数：<span>65</span></div>
-          </li>
-          <li>
-            <div class="name">FY<span class>(化药系15级化学工程与工艺16班)</span></div>
-            <div class="invitation-code">邀请码：QQ65938815</div>
-            <div class="votes">邀请票数：<span>58</span></div>
-          </li>
-          <li>
-            <div class="name">小公子ASIR<span class>(国贸系15级国贸专业8班)</span></div>
-            <div class="invitation-code">邀请码：QQ66155191</div>
-            <div class="votes">邀请票数：<span>53</span></div>
-          </li>
+          {% end %}
         </ol>
       </div>
     </div>
   </div>
-  <script src="assets/zepto.min.js"></script>
-  <script src="assets/ranking.js"></script>
+  <script src="/static/zepto.min.js"></script>
+  <script src="/static/ranking.js"></script>
 </body>
 </html>
