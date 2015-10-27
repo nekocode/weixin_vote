@@ -59,14 +59,14 @@ class MainHandler(RequestHandler):
                     try:
                         vote_code = int(text[1:])
                         vote_rlt = account.vote(vote_code, user, user_info)
-                        if vote_rlt >= 0:  # 投票成功
-                            invite_code = str(vote_rlt)
+                        if type(vote_rlt) is tuple:  # 投票成功
+                            invite_code = str(vote_rlt[0])
+                            class_name = vote_rlt[1]
+
                             reply_msg = account.news_msg(user, our, [{
-                                'title': '恭喜你为【' + 'xxxx' + '】投票成功!',
-                                'pic_url': 'http://mmbiz.qpic.cn/mmbiz/Wuhx7MUWdrdbtK3wdngeLY5uiaglJm9wi'
-                                           'bNgMzWB0WJS1HsOTomORJia3ibIJlJGCYFXzofdM6o4yXEXIUPic4oux0w/640'
-                                           '?wx_fmt=jpeg&tp=webp&wxfrom=5',  # todo：内链模板
-                                'url': 'http://www.baidu.com'
+                                'title': '恭喜你为【' + class_name + '】投票成功!',
+                                'pic_url': '',
+                                'url': ''  # todo：内链模板
                             }, {
                                 'title': '▶点击此处获取邀请码',
                                 'url': domain + '/invite_code/' + invite_code
@@ -89,7 +89,7 @@ class MainHandler(RequestHandler):
                         reply_msg = account.text_msg(user, our, '你的投票码有误，请尝试重新获取')
 
                 elif text.startwith('Q'):
-                    # todo：提供所在学校的链接
+                    # todo：提供所在学校的公众号 qrcode
                     reply_msg = account.text_msg(user, our, '请将邀请码发给你的小伙伴，'
                                                             '并在举办你所在学校比赛的子公众号内使用邀请码投票')
 
@@ -97,7 +97,7 @@ class MainHandler(RequestHandler):
                 if text.startwith('V'):
                     reply_msg = account.news_msg(user, our, [{
                         'title': '为防止刷票，请到该公众号下投票',
-                        'url': ''       # todo
+                        'url': domain + '/qrcode/' + account.vote_account_id
                     }])
 
                 elif text.startwith('C') or text.startwith('I'):
@@ -110,16 +110,16 @@ class MainHandler(RequestHandler):
                             reply_msg = account.text_msg(user, our, '你的邀请码有误')
 
                     else:
-                        vote_code = str(vote_code)
+                        vote_code = str(vote_code[0])
+                        class_name = vote_code[1]
+
                         reply_msg = account.news_msg(user, our, [{
-                            'title': '你还差一步即可成功为【' + 'xxxx' + '】投票',
-                            'pic_url': 'http://mmbiz.qpic.cn/mmbiz/Wuhx7MUWdrdbtK3wdngeLY5uiaglJm9wibNgMzWB0W'
-                                       'JS1HsOTomORJia3ibIJlJGCYFXzofdM6o4yXEXIUPic4oux0w/640?wx_fmt=jpeg&tp=w'
-                                       'ebp&wxfrom=5',  # todo：内链模板
-                            'url': 'http://www.baidu.com'
+                            'title': '你还差一步即可成功为【' + class_name + '】投票',
+                            'pic_url': account.intro_img_url,
+                            'url': account.intro_url
                         }, {
                             'title': '▶点击此处完成投票操作',
-                            'url': domain + '/vote_code/' + vote_code  # todo: 外链
+                            'url': domain + '/vote_code/' + account.vote_account_id + '?vc=' + vote_code
                         }, {
                             'title': '点击此处查看排行榜~',
                             'url': domain + '/rank/' + appid
@@ -132,13 +132,35 @@ class VoteCodeHandler(RequestHandler):
     def data_received(self, chunk):
         pass
 
-    def get(self, vote_code):
-        vote_code = 'V' + str(vote_code)
-        qrcode_url = '/static/assets/qrcode.png'    # todo
-        account_name = '校园大板凳'                  # todo
-        account_id = 'xiaoyuan_band'                # todo
+    def get(self, app_id):
+        if app_id not in vote_accounts:
+            self.write('打开姿势有误 ╮(╯_╰)╭')
+            return
+        account = vote_accounts[app_id]
+
+        vote_code = 'V' + str(self.get_argument('vc'))
+        qrcode_url = account.qrcode_url
+        account_name = account.name
+        account_id = account.display_id
 
         self.render("static/vote_code.html", vote_code=vote_code, qrcode_url=qrcode_url,
+                    account_name=account_name, account_id=account_id)
+
+
+class QRCodeHandler(RequestHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self, app_id):
+        if app_id not in vote_accounts:
+            self.write('打开姿势有误 ╮(╯_╰)╭')
+            return
+        account = vote_accounts[app_id]
+        qrcode_url = account.qrcode_url
+        account_name = account.name
+        account_id = account.display_id
+
+        self.render("static/qrcode.html", qrcode_url=qrcode_url,
                     account_name=account_name, account_id=account_id)
 
 
@@ -162,10 +184,10 @@ class RankHandler(RequestHandler):
             return
         account = school_accounts[app_id]
         class_rank_rows = account.get_classes_rank()
-        person_rank_rows = account.get_person_rank()    # todo: add person.class_name
+        person_rank_rows = account.get_person_rank()
 
-        avatar_url = '/static/assets/avatar.jpg'    # todo
-        school_name = '广州大学'     # todo
+        avatar_url = account.avatar_url
+        school_name = account.school_name
         class_count = len(class_rank_rows)
         vote_total_count = account.voting_count
 
@@ -183,6 +205,7 @@ application = Application([
     (r'/sub_account/(.*)', MainHandler, dict(accounts=school_accounts)),
     (r'/vote_account/(.*)', MainHandler, dict(accounts=vote_accounts)),
     (r'/vote_code/(.*)', VoteCodeHandler),
+    (r'/qrcode/(.*)', QRCodeHandler),
     (r'/invite_code/(.*)', InviteCodeHandler),
     (r'/rank/(.*)', RankHandler)
 ], **settings)

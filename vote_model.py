@@ -7,8 +7,13 @@ __author__ = 'nekocode'
 
 
 class VoteAccount(WeixinHelper):
-    def __init__(self, account_config):
+    def __init__(self, account_config, name, display_id, avatar_url, qrcode_url):
         WeixinHelper.__init__(self, account_config)
+
+        self.name = name
+        self.display_id = display_id
+        self.avatar_url = avatar_url
+        self.qrcode_url = qrcode_url
 
     def vote(self, vote_code, open_id, user_info):
         row = db.get("select * from vote_codes where id=%d" % vote_code)
@@ -36,16 +41,16 @@ class VoteAccount(WeixinHelper):
 
         # 添加个人投票记录，并返回 invite_id
         row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
-                           "class_id, school_account_id) "
-                           "values('%s','%s', '%s', %d, %d, %s)" %
+                           "class_id, class_name, school_account_id) "
+                           "values('%s','%s', '%s', %d, %d, %s, %s)" %
                            (open_id, user_info['nickname'], user_info['headimgurl'], 0,
-                            row.class_id, self.app_id))
+                            class_row.id, class_row.class_name, self.app_id))
 
         # 是邀请而来的话，邀请人邀请数 +1
         if row.invite_id is not None:
             db.update("update voted_people set inviting_count=inviting_count+1 where id=%d" % row.invite_id)
 
-        return row_id   # 返回邀请码
+        return row_id, class_row.class_name   # 返回邀请码，班级名
 
     @staticmethod
     def get_school_account_app_id(vote_code):
@@ -56,13 +61,19 @@ class VoteAccount(WeixinHelper):
 
 
 class SchoolAccount(WeixinHelper):
-    def __init__(self, account_config, vote_account_id, school_name, avatar_url, voting_count):
+    def __init__(self, account_config, vote_account_id, school_name, voting_count,
+                 name, display_id, avatar_url, qrcode_url, intro_url, intro_img_url):
         WeixinHelper.__init__(self, account_config)
 
         self.vote_account_id = vote_account_id
         self.school_name = school_name
-        self.avatar_url = avatar_url
         self.voting_count = voting_count
+        self.name = name
+        self.display_id = display_id
+        self.avatar_url = avatar_url
+        self.qrcode_url = qrcode_url
+        self.intro_url = intro_url
+        self.intro_img_url = intro_img_url
 
     @staticmethod
     def get_vote_code(code_with_prefix):
@@ -70,16 +81,17 @@ class SchoolAccount(WeixinHelper):
             if code_with_prefix.startwith('C'):
                 class_id = int(code_with_prefix[1:])
                 row_id = db.insert("insert to vote_codes(class_id, voted) values(%d, false)" % class_id)
-                return row_id   # 返回投票码
+                row = db.get('select * from classes where id=%d' % class_id)
+                return row_id, row.class_name   # 返回投票码，班级名称
 
             else:   # start with 'I' 是邀请码的话
                 invite_id = int(code_with_prefix[1:])
                 row = db.get("select * from voted_people where id=%d" % invite_id)
                 row_id = db.insert("insert to vote_codes(class_id, voted, invite_id) values(%d, false, %d)" %
                                    (row.class_id, invite_id))
-                return row_id   # 返回投票码
+                row2 = db.get('select * from classes where id=%d' % row.class_id)
+                return row_id, row2.class_name   # 返回投票码，班级名称
 
-                pass
         except ValueError:
             return None
 
@@ -129,7 +141,7 @@ def init_db(host_and_port, db_name, user, pwd):
             'app_secret': account.app_secret,
             'token': account.token,
             'aes_key': account.aes_key
-        })
+        }, account.name, account.display_id, account.avatar_url, account.qrcode_url)
 
     rlt = db.query("select * from school_accounts")
     for account in rlt:
@@ -138,7 +150,9 @@ def init_db(host_and_port, db_name, user, pwd):
             'app_secret': account.app_secret,
             'token': account.token,
             'aes_key': account.aes_key
-        }, account.vote_account_id, account.school_name, account.avatar_url, account.voting_count)
+        }, account.vote_account_id, account.school_name, account.voting_count,
+            account.name, account.display_id, account.avatar_url, account.qrcode_url,
+            account.intro_url, account.intro_img_url)
 
         school_accounts[account.app_id] = school_account
 
@@ -146,13 +160,15 @@ def init_db(host_and_port, db_name, user, pwd):
 def create_tables():
     if if_table_exist('vote_accounts') == 0:
         db.execute("create table vote_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
-                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL)")
+                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
+                   "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512))")
 
     if if_table_exist('school_accounts') == 0:
         db.execute("create table school_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
-                   "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), avatar_url VARCHAR(512), "
-                   "voting_count INTEGER)")
+                   "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), voting_count INTEGER, "
+                   "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512), "
+                   "intro_url VARCHAR(512), intro_img_url VARCHAR(512))")
 
     if if_table_exist('classes') == 0:
         # 使用 id 做班级码
@@ -163,7 +179,7 @@ def create_tables():
         # 使用 id 做邀请码
         db.execute("create table voted_people(id INTEGER PRIMARY KEY AUTO_INCREMENT, open_id VARCHAR(128) NOT NULL, "
                    "nickname VARCHAR(60), avatar_url VARCHAR(512), inviting_count INTEGER, "
-                   "class_id INTEGER, school_account_id VARCHAR(20) NOT NULL)")
+                   "class_id INTEGER, class_name VARCHAR(60), school_account_id VARCHAR(20) NOT NULL)")
 
     if if_table_exist('vote_codes') == 0:
         # 使用 id 做投票码
