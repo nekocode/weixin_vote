@@ -142,21 +142,6 @@ class VoteCodeHandler(RequestHandler):
         self.write('为了防止刷票，你的投票码是 ' + vote_code)
 
 
-class RankHandler(RequestHandler):
-    def data_received(self, chunk):
-        pass
-
-    def get(self, app_id):
-        if app_id not in school_accounts:
-            self.write('failed')
-
-        account = school_accounts[app_id]
-        class_rank = account.get_classes_rank()
-        person_rank = account.get_person_rank()
-
-        self.write('排行榜：')
-
-
 class InviteCodeHandler(RequestHandler):
     def data_received(self, chunk):
         pass
@@ -167,6 +152,21 @@ class InviteCodeHandler(RequestHandler):
         self.write('你的邀请码为 ' + invite_code)
 
 
+class RankHandler(RequestHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self, app_id):
+        if app_id not in school_accounts:
+            self.write('你的打开方式出了点问题 ╮(╯_╰)╭')
+
+        account = school_accounts[app_id]
+        class_rank_rows = account.get_classes_rank()
+        person_rank_rows = account.get_person_rank()
+
+        self.write('排行榜：')
+
+
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static")
 }
@@ -175,8 +175,8 @@ application = Application([
     (r'/sub_account/(.*)', MainHandler, dict(accounts=school_accounts)),
     (r'/vote_account/(.*)', MainHandler, dict(accounts=vote_accounts)),
     (r'/vote_code/(.*)', VoteCodeHandler),
-    (r'/rank/(.*)', RankHandler),
-    (r'/invite_code/(.*)', InviteCodeHandler)
+    (r'/invite_code/(.*)', InviteCodeHandler),
+    (r'/rank/(.*)', RankHandler)
 ], **settings)
 
 if __name__ == '__main__':

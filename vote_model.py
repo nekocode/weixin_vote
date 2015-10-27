@@ -10,8 +10,7 @@ class VoteAccount(WeixinHelper):
     def __init__(self, account_config):
         WeixinHelper.__init__(self, account_config)
 
-    @staticmethod
-    def vote(vote_code, open_id, user_info):
+    def vote(self, vote_code, open_id, user_info):
         row = db.get("select * from vote_codes where id=%d" % vote_code)
 
         if row is None:
@@ -27,9 +26,11 @@ class VoteAccount(WeixinHelper):
 
         db.update("update vote_codes set voted=true where id=%d" % vote_code)
         db.update("update classes set voting_count=voting_count+1 where id=%d" % row.class_id)
-        row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, class_id) "
-                           "values('%s','%s', '%s', %d, %d)" %
-                           (open_id, user_info['nickname'], user_info['headimgurl'], 0, row.class_id))
+        row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
+                           "class_id, school_account_id) "
+                           "values('%s','%s', '%s', %d, %d, %s)" %
+                           (open_id, user_info['nickname'], user_info['headimgurl'], 0,
+                            row.class_id, self.app_id))
 
         if row.invite_id is not None:   # 是邀请而来
             db.update("update voted_people set inviting_count=inviting_count+1 where id=%d" % row.invite_id)
@@ -72,10 +73,13 @@ class SchoolAccount(WeixinHelper):
             return None
 
     def get_classes_rank(self):
-        pass
+        rows = db.query("select * from classes where school_account_id=%s order by voting_count desc" % self.app_id)
+        return rows
 
     def get_person_rank(self):
-        pass
+        rows = db.query("select * from voted_people where school_account_id=%s order by inviting_count desc" %
+                        self.app_id)
+        return rows
 
 
 class Class:
@@ -146,7 +150,8 @@ def create_tables():
     if if_table_exist('voted_people') == 0:
         # 使用 id 做邀请码
         db.execute("create table voted_people(id INTEGER PRIMARY KEY AUTO_INCREMENT, open_id VARCHAR(128) NOT NULL, "
-                   "nickname VARCHAR(60), avatar_url VARCHAR(512), inviting_count INTEGER, class_id INTEGER)")
+                   "nickname VARCHAR(60), avatar_url VARCHAR(512), inviting_count INTEGER, "
+                   "class_id INTEGER, school_account_id VARCHAR(20) NOT NULL)")
 
     if if_table_exist('vote_codes') == 0:
         # 使用 id 做投票码
