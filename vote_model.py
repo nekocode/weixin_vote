@@ -103,11 +103,13 @@ class SchoolAccount(WeixinHelper):
             return None
 
     def get_classes_rank(self):
-        rows = db.query("select * from classes where school_account_id='%s' order by voting_count desc" % self.app_id)
+        rows = db.query("select * from classes where school_account_id='%s' "
+                        "order by voting_count desc limit 0,20" % self.app_id)
         return rows
 
     def get_person_rank(self):
-        rows = db.query("select * from voted_people where school_account_id='%s' order by inviting_count desc" %
+        rows = db.query("select * from voted_people where school_account_id='%s' "
+                        "order by inviting_count desc limit 0,20" %
                         self.app_id)
         return rows
 

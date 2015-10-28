@@ -31,18 +31,25 @@ $(function(){
       isAnimating = true;
       startPosition = {
         pageX: event.pageX || event.touches.item(0).pageX,
+        pageY: event.pageY || event.touches.item(0).pageY,
       };
     }
   };
 
   var animate = function(event){
     if (isAnimating) {
-      var slideDistance = (event.pageX || event.touches.item(0).pageX) - startPosition.pageX;
-      if (slideDistance < -8) {
+      var xDistance = (event.pageX || event.touches.item(0).pageX) - startPosition.pageX,
+          yDistance = Math.abs((event.pageY || event.touches.item(0).pageY) - startPosition.pageY);
+
+      // 竖直方向偏移较大时不切换
+      if (3 * yDistance > Math.abs(xDistance)) {
+        isAnimating = false;
+      }
+      else if (xDistance < -8) {
         showLastTab();
         isAnimating = false;
       }
-      else if (slideDistance > 8) {
+      else if (xDistance > 8) {
         showFirstTab();
         isAnimating = false;
       }
