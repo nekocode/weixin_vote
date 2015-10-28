@@ -17,21 +17,22 @@ DB_PWD = ''
 - for sae
 - multiple accounts suport
 
-### todo
-- [ ] 自动获取公众号基本信息
-- [ ] 邀请码、注册码自动定时清理
-
 ### libs
 - tornado
 - MySQL-python
 - pycrypto
 - httplib2
 
-### dev env
-- use TUNNEL : http://www.tunnel.mobi/
-```
-ngrok -config ngrok.cfg -subdomain weixin_vote 8080
-```
+### todo
+- [ ] 自动获取公众号基本信息
+- [ ] 邀请码、注册码自动定时清理
 
-### tmp note
-- style: http://dushu.xiaomi.com/#1
+### screenshots
+
+![](art/1.png "")
+![](art/2.png "")
+![](art/3.png "")
+![](art/4.png "")
+![](art/5.png "")
+![](art/6.png "")
+![](art/7.png "")

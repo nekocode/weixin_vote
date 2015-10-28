@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import tornado
 from tornado.web import Application, RequestHandler
 from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
@@ -10,6 +11,10 @@ import config
 __author__ = 'nekocode'
 
 domain = config.DOMAIN
+
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 class MainHandler(RequestHandler):
@@ -62,17 +67,19 @@ class MainHandler(RequestHandler):
                         if type(vote_rlt) is tuple:  # 投票成功
                             invite_code = str(vote_rlt[0])
                             class_name = vote_rlt[1]
+                            school_account_app_id = account.get_school_account_app_id(vote_code)
+                            school_account = school_accounts[school_account_app_id]
 
                             reply_msg = account.news_msg(user, our, [{
                                 'title': '恭喜你为【' + class_name + '】投票成功!',
-                                'pic_url': '',
-                                'url': ''  # todo：内链模板
+                                'pic_url': school_account.intro_img_url,
+                                'url': school_account.intro_url
                             }, {
                                 'title': '▶点击此处获取邀请码',
                                 'url': domain + '/invite_code/' + invite_code
                             }, {
                                 'title': '点击此处查看排行榜~',
-                                'url': domain + '/rank/' + account.get_school_account_app_id(vote_code)
+                                'url': domain + '/rank/' + school_account_app_id
                             }])
 
                         elif vote_rlt == -1:
@@ -138,7 +145,7 @@ class VoteCodeHandler(RequestHandler):
             return
         account = vote_accounts[app_id]
 
-        vote_code = 'V' + str(self.get_argument('vc'))
+        vote_code = 'V%08d' % int(self.get_argument('vc'))
         qrcode_url = account.qrcode_url
         account_name = account.name
         account_id = account.display_id
@@ -169,7 +176,7 @@ class InviteCodeHandler(RequestHandler):
         pass
 
     def get(self, invite_code):
-        invite_code = 'I' + str(invite_code)
+        invite_code = 'I%08d' % int(invite_code)
 
         self.render("static/invite_code.html", invite_code=invite_code)
 
@@ -222,7 +229,7 @@ def server(host_and_port, db_name, user, pwd):
         WeixinRefreshATKWorker(vote_weixin).start()
 
     if __name__ == '__main__':
-        application.listen(8080)
+        application.listen(80)
         tornado.ioloop.IOLoop.instance().start()
 
 
