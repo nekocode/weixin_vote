@@ -5,10 +5,11 @@ import tornado
 from tornado.web import Application, RequestHandler
 from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
 from weixin_helper import xml2dict, WeixinRefreshATKWorker
+import config
 
 __author__ = 'nekocode'
 
-domain = 'http://nekocodeweixin.sinaapp.com'
+domain = config.DOMAIN
 
 
 class MainHandler(RequestHandler):
@@ -87,7 +88,7 @@ class MainHandler(RequestHandler):
                     except ValueError:
                         reply_msg = account.text_msg(user, our, '你的投票码有误，请尝试重新获取')
 
-                elif text.startswith('Q'):
+                elif text.startswith('I'):
                     # todo：提供所在学校的公众号 qrcode
                     reply_msg = account.text_msg(user, our, '请将邀请码发给你的小伙伴，'
                                                             '并在举办你所在学校比赛的子公众号内使用邀请码投票')
@@ -226,5 +227,5 @@ def server(host_and_port, db_name, user, pwd):
 
 
 if __name__ == '__main__':
-    server('localhost:3306', 'app_nekocode', 'root', 'root')
+    server(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
 

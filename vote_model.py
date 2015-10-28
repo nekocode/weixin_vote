@@ -200,6 +200,4 @@ def if_table_exist(db_name, table_name):
     return count.count
 
 
-if __name__ == '__main__':
-    init_db('localhost:3306', 'app_nekocode', 'root', 'root')
 
