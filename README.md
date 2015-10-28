@@ -1,5 +1,16 @@
 # weixin_vote
 
+### run steps
+- add config.py
+```
+DOMAIN = ''
+DB_HOST = ''
+DB_NAME = ''
+DB_USER = ''
+DB_PWD = ''
+```
+- run `index.py`
+
 ### feature
 - tornado
 - torndb(no ORM!): http://torndb.readthedocs.org/en/latest/#
@@ -15,7 +26,6 @@
 - MySQL-python
 - pycrypto
 - httplib2
-
 
 ### dev env
 - use TUNNEL : http://www.tunnel.mobi/
