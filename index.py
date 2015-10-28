@@ -51,8 +51,8 @@ class MainHandler(RequestHandler):
             our = msg['ToUserName']
             text = msg['Content']
 
-            if type(account) == VoteAccount:
-                if text.startwith('V'):
+            if isinstance(account, VoteAccount):
+                if text.startswith('V'):
                     user_info = account.get_user_info(user)
 
                     try:
@@ -87,30 +87,30 @@ class MainHandler(RequestHandler):
                     except ValueError:
                         reply_msg = account.text_msg(user, our, '你的投票码有误，请尝试重新获取')
 
-                elif text.startwith('Q'):
+                elif text.startswith('Q'):
                     # todo：提供所在学校的公众号 qrcode
                     reply_msg = account.text_msg(user, our, '请将邀请码发给你的小伙伴，'
                                                             '并在举办你所在学校比赛的子公众号内使用邀请码投票')
 
-            elif type(account) == SchoolAccount:
-                if text.startwith('V'):
+            elif isinstance(account, SchoolAccount):
+                if text.startswith('V'):
                     reply_msg = account.news_msg(user, our, [{
                         'title': '为防止刷票，请到该公众号下投票',
                         'url': domain + '/qrcode/' + account.vote_account_id
                     }])
 
-                elif text.startwith('C') or text.startwith('I'):
-                    vote_code = account.get_vote_code(text)
+                elif text.startswith('C') or text.startswith('I'):
+                    rlt = account.get_vote_code(text)
 
-                    if vote_code is None:
-                        if text.startwith('C'):
+                    if rlt is None:
+                        if text.startswith('C'):
                             reply_msg = account.text_msg(user, our, '你的班级码有误')
-                        elif text.startwith('I'):
+                        elif text.startswith('I'):
                             reply_msg = account.text_msg(user, our, '你的邀请码有误')
 
                     else:
-                        vote_code = str(vote_code[0])
-                        class_name = vote_code[1]
+                        vote_code = str(rlt[0])
+                        class_name = rlt[1]
 
                         reply_msg = account.news_msg(user, our, [{
                             'title': '你还差一步即可成功为【' + class_name + '】投票',

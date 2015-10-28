@@ -78,16 +78,23 @@ class SchoolAccount(WeixinHelper):
     @staticmethod
     def get_vote_code(code_with_prefix):
         try:
-            if code_with_prefix.startwith('C'):
+            if code_with_prefix.startswith('C'):
                 class_id = int(code_with_prefix[1:])
-                row_id = db.insert("insert to vote_codes(class_id, voted) values(%d, false)" % class_id)
+                row = db.get('select * from classes where id=%d' % class_id)
+                if row is None:     # 没有该班级
+                    return None
+
+                row_id = db.insert("insert into vote_codes(class_id, voted) values(%d, false)" % class_id)
                 row = db.get('select * from classes where id=%d' % class_id)
                 return row_id, row.class_name   # 返回投票码，班级名称
 
             else:   # start with 'I' 是邀请码的话
                 invite_id = int(code_with_prefix[1:])
                 row = db.get("select * from voted_people where id=%d" % invite_id)
-                row_id = db.insert("insert to vote_codes(class_id, voted, invite_id) values(%d, false, %d)" %
+                if row is None:     # 没有该邀请人
+                    return None
+
+                row_id = db.insert("insert into vote_codes(class_id, voted, invite_id) values(%d, false, %d)" %
                                    (row.class_id, invite_id))
                 row2 = db.get('select * from classes where id=%d' % row.class_id)
                 return row_id, row2.class_name   # 返回投票码，班级名称

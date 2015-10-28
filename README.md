@@ -13,7 +13,7 @@
 ### libs
 - tornado
 - MySQL-python
-- prcrypto
+- pycrypto
 - httplib2
 
 

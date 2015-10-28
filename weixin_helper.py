@@ -120,7 +120,7 @@ class WeixinHelper:
             if 'description' in new:
                 xml += '<Description>' + _cdata(new['description']) + '</Description>'
             if 'pic_url' in new:
-                xml += '<PicUrl>' + _cdata(new['description']) + '</PicUrl>'
+                xml += '<PicUrl>' + _cdata(new['pic_url']) + '</PicUrl>'
             xml += '<Url>' + _cdata(new['url']) + '</Url></item>'
 
         xml += '</Articles></xml> '
