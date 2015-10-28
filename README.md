@@ -10,6 +10,13 @@
 - [ ] 自动获取公众号基本信息
 - [ ] 邀请码、注册码自动定时清理
 
+### libs
+- tornado
+- MySQL-python
+- prcrypto
+- httplib2
+
+
 ### dev env
 - use TUNNEL : http://www.tunnel.mobi/
 ```
