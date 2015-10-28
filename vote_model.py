@@ -24,7 +24,7 @@ class VoteAccount(WeixinHelper):
         if row.voted:
             return -2   # 投票码已使用
 
-        row2 = db.query("select * from voted_people where open_id=%s and class_id=%d" % (open_id, row.class_id))
+        row2 = db.query("select * from voted_people where open_id='%s' and class_id=%d" % (open_id, row.class_id))
 
         if len(row2) != 0:
             return -3   # 你已经为该班级投过票了
@@ -36,15 +36,15 @@ class VoteAccount(WeixinHelper):
         # 校园总票数 +1
         class_row = db.get("select * from classes where id=%d" % row.class_id)
         school_account_id = class_row.school_account_id
-        db.update("update school_accounts set voting_count=voting_count+1 where app_id=%s" % school_account_id)
+        db.update("update school_accounts set voting_count=voting_count+1 where app_id='%s'" % school_account_id)
         school_accounts[school_account_id].voting_count += 1
 
         # 添加个人投票记录，并返回 invite_id
         row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
                            "class_id, class_name, school_account_id) "
-                           "values('%s','%s', '%s', %d, %d, %s, %s)" %
+                           "values('%s','%s', '%s', %d, %d, '%s', '%s')" %
                            (open_id, user_info['nickname'], user_info['headimgurl'], 0,
-                            class_row.id, class_row.class_name, self.app_id))
+                            class_row.id, class_row.class_name, school_account_id))
 
         # 是邀请而来的话，邀请人邀请数 +1
         if row.invite_id is not None:
@@ -55,9 +55,9 @@ class VoteAccount(WeixinHelper):
     @staticmethod
     def get_school_account_app_id(vote_code):
         row = db.get("select * from vote_codes where id=%d" % vote_code)
-        school_account = db.get("select * from classes where id=%d" % row.class_id)
+        _class = db.get("select * from classes where id=%d" % row.class_id)
 
-        return school_account.app_id
+        return _class.school_account_id
 
 
 class SchoolAccount(WeixinHelper):
@@ -103,11 +103,11 @@ class SchoolAccount(WeixinHelper):
             return None
 
     def get_classes_rank(self):
-        rows = db.query("select * from classes where school_account_id=%s order by voting_count desc" % self.app_id)
+        rows = db.query("select * from classes where school_account_id='%s' order by voting_count desc" % self.app_id)
         return rows
 
     def get_person_rank(self):
-        rows = db.query("select * from voted_people where school_account_id=%s order by inviting_count desc" %
+        rows = db.query("select * from voted_people where school_account_id='%s' order by inviting_count desc" %
                         self.app_id)
         return rows
 
