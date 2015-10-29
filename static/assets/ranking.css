@@ -5,11 +5,12 @@ html {
 }
 
 body {
-  min-height: 100%;
+	min-height: 100%;
   margin: 0;
   padding: 10px;
   font-size: 14px;
   font-family: Arial;
+  color: #606060;
   background-color: #E8EBEB;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
@@ -52,6 +53,11 @@ body {
 
 .school-info .name {
   font-size: 1.2rem;
+}
+
+a.name {
+    text-decoration: underline;
+    color: #808080;
 }
 
 .school-info .class-count span,
@@ -184,7 +190,6 @@ body {
 .tab-content .ranking2 li {
   position: relative;
   padding: 0.6em 0 0.5em 2.0em;
-  line-height: 0.8;
 }
 
 .tab-content .ranking2 li::before {

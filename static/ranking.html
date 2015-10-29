@@ -10,7 +10,7 @@
   <div class="school-info">
     <img src="{{ avatar_url }}" alt="avatar" class="avatar">
     <div>
-      <div class="name">{{ school_name }}</div>
+      <a class="name" href="{{ qrcode_url }}">{{ school_name }}</a>
       <div class="class-count">班级数：<span>{{ class_count }}</span></div>
       <div class="votes">投票数：<span>{{ vote_total_count }}</span></div>
     </div>

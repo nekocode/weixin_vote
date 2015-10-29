@@ -159,10 +159,15 @@ class QRCodeHandler(RequestHandler):
         pass
 
     def get(self, app_id):
-        if app_id not in vote_accounts:
+        account = None
+        if app_id in vote_accounts:
+            account = vote_accounts[app_id]
+        elif app_id in school_accounts:
+            account = school_accounts[app_id]
+        else:
             self.write('打开姿势有误 ╮(╯_╰)╭')
             return
-        account = vote_accounts[app_id]
+
         qrcode_url = account.qrcode_url
         account_name = account.name
         account_id = account.display_id
@@ -194,13 +199,14 @@ class RankHandler(RequestHandler):
         person_rank_rows = account.get_person_rank()
 
         avatar_url = account.avatar_url
+        qrcode_url = domain + '/qrcode/' + account.app_id
         school_name = account.school_name
         class_count = len(class_rank_rows)
         vote_total_count = account.voting_count
 
         self.render("static/ranking.html",
                     class_rank_rows=class_rank_rows, person_rank_rows=person_rank_rows,
-                    avatar_url=avatar_url, school_name=school_name, class_count=class_count,
+                    avatar_url=avatar_url, qrcode_url=qrcode_url, school_name=school_name, class_count=class_count,
                     vote_total_count=vote_total_count)
 
 
