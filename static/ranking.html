@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, minal-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
   <title>{{ school_name }}排行榜</title>
-  <link rel="stylesheet" href="/static/assets/ranking.css">
+  <link rel="stylesheet" href="{{ static_url("assets/ranking.css") }}">
 </head>
 <body>
   <div class="school-info">
@@ -41,7 +41,7 @@
       </div>
     </div>
   </div>
-  <script src="/static/assets/zepto.min.js"></script>
-  <script src="/static/assets/ranking.js"></script>
+  <script src="{{ static_url("assets/zepto.min.js") }}"></script>
+  <script src="{{ static_url("assets/ranking.js") }}"></script>
 </body>
 </html>

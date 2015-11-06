@@ -55,7 +55,7 @@ class MainHandler(RequestHandler):
         if msg['MsgType'] == 'text':
             user = msg['FromUserName']
             our = msg['ToUserName']
-            text = msg['Content']
+            text = msg['Content'].upper()
 
             if isinstance(account, VoteAccount):
                 if text.startswith('V'):
@@ -145,7 +145,7 @@ class VoteCodeHandler(RequestHandler):
             return
         account = vote_accounts[app_id]
 
-        vote_code = 'V%08d' % int(self.get_argument('vc'))
+        vote_code = 'V%05d' % int(self.get_argument('vc'))
         qrcode_url = account.qrcode_url
         account_name = account.name
         account_id = account.display_id
@@ -181,7 +181,7 @@ class InviteCodeHandler(RequestHandler):
         pass
 
     def get(self, invite_code):
-        invite_code = 'I%08d' % int(invite_code)
+        invite_code = 'I%05d' % int(invite_code)
 
         self.render("static/invite_code.html", invite_code=invite_code)
 
@@ -211,7 +211,8 @@ class RankHandler(RequestHandler):
 
 
 settings = {
-    "static_path": os.path.join(os.path.dirname(__file__), "static")
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "cookie_secret": "61oETzKXQAGaYdk12345GeJJFuYh7EQnp2XdTP1o/Vo=",
 }
 
 application = Application([
@@ -224,8 +225,8 @@ application = Application([
 ], **settings)
 
 
-def server(host_and_port, db_name, user, pwd):
-    init_db(host_and_port, db_name, user, pwd)
+def server():
+    init_db()
 
     # 刷新 access token
     for key, school_weixin in school_accounts.items():
@@ -234,11 +235,10 @@ def server(host_and_port, db_name, user, pwd):
     for key, vote_weixin in vote_accounts.items():
         WeixinRefreshATKWorker(vote_weixin).start()
 
-    if __name__ == '__main__':
-        application.listen(80)
-        tornado.ioloop.IOLoop.instance().start()
+    application.listen(80)
+    tornado.ioloop.IOLoop.instance().start()
 
 
 if __name__ == '__main__':
-    server(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
+    server()
 

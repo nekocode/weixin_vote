@@ -14,7 +14,6 @@ DB_PWD = ''
 ### feature
 - tornado
 - torndb(no ORM!): http://torndb.readthedocs.org/en/latest/#
-- for sae
 - multiple accounts suport
 
 ### libs
@@ -26,6 +25,8 @@ DB_PWD = ''
 ### todo
 - [ ] 自动获取公众号基本信息
 - [ ] 邀请码、注册码自动定时清理
+- [ ] 管理后台
+- [ ] 将 WeixinRefreshATKWorker 分离出来
 
 ### screenshots
 

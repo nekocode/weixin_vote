@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head> 
+  <meta charset="utf-8" /> 
+  <title>微信投票 管理后台</title> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <link href="css/bootstrap.css" rel="stylesheet" /> 
+  <link href="css/site.css" rel="stylesheet" /> 
+  <link href="css/bootstrap-responsive.css" rel="stylesheet" />
+ </head> 
+ <body> 
+  <div class="navbar navbar-fixed-top"> 
+   <div class="navbar-inner"> 
+    <div class="container-fluid"> 
+     <a class="brand" href="#">微信投票 管理后台</a> 
+    </div> 
+   </div> 
+  </div> 
+  <div class="container-fluid"> 
+   <div class="row-fluid"> 
+    <div class="span3"> 
+     <div class="well sidebar-nav"> 
+      <ul class="nav nav-list"> 
+       <li class="nav-header"><i class="icon-wrench"></i> 大家一起来投票</li> 
+       <li class="nav-header"><i class="icon-signal"></i> 账号设置</li> 
+       <li><a href="vote-accounts.html">大号列表</a></li> 
+       <li class="active"><a href="sub-accounts.html">小号列表</a></li> 
+       <li class="nav-header"><i class="icon-filter"></i> 其他属性</li> 
+       <li><a href="classes.html">班级列表</a></li> 
+       <li><a href="peoples.html">投票用户</a></li> 
+       <li class="nav-header"><i class="icon-user"></i> 账户操作</li> 
+       <li><a href="login.html">退出</a></li> 
+      </ul> 
+     </div> 
+    </div> 
+    <div class="span9"> 
+     <div class="row-fluid"> 
+      <div class="page-header"> 
+       <h1>小号列表 <small>每个学校对应的公众号，用户在该公众号下获取投票码</small></h1> 
+      </div> 
+      <table class="table table-striped table-bordered table-condensed"> 
+       <thead> 
+        <tr> 
+         <th>微信公众号</th> 
+         <th>总票数</th> 
+         <th>app_id</th> 
+         <th>app_secret</th> 
+         <th>token</th> 
+         <th>学校名称</th> 
+         <th>介绍页面 URL</th> 
+         <th>介绍页面背景图 URL</th> 
+         <th></th> 
+        </tr> 
+       </thead> 
+       <tbody> 
+        <tr class="list-users"> 
+         <td><strong>华商人</strong> (gdhscer)</td> 
+         <td>12340</td> 
+         <td>wxfcc58491aa0b07d6</td> 
+         <td>d4624c36b6795d1d99dcf0547af5443d</td> 
+         <td>nekocode</td> 
+         <td>华南商业大学</td> 
+         <td><a href="#" class="btn btn-mini">查看</a></td> 
+         <td><a href="#" class="btn btn-mini">查看</a></td> 
+         <td> 
+          <div class="btn-group"> 
+           <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a> 
+           <ul class="dropdown-menu"> 
+            <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li> 
+            <li><a href="#"><i class="icon-trash"></i> 删除</a></li> 
+            <li class="nav-header">其他</li> 
+            <li><a href="#"><i class="icon-lock"></i> 公众号信息</a></li> 
+           </ul> 
+          </div> </td> 
+        </tr> 
+       </tbody> 
+      </table> 
+      <div class="pagination"> 
+       <ul> 
+        <li><a href="#">Prev</a></li> 
+        <li class="active"> <a href="#">1</a> </li> 
+        <li><a href="#">2</a></li> 
+        <li><a href="#">Next</a></li> 
+       </ul> 
+      </div> 
+      <a href="new-user.html" class="btn btn-success">添加公众号</a> 
+      <a href="#" class="btn btn-info">按投票数排序</a> 
+     </div> 
+    </div> 
+   </div> 
+   <hr /> 
+   <footer class="well">
+     &copy; nc 
+   </footer> 
+  </div> 
+  <script src="js/jquery.js"></script> 
+  <script src="js/bootstrap.min.js"></script>   
+ </body>
+</html>

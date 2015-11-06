@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import config
 from weixin_helper import WeixinHelper
 import torndb
 
@@ -7,8 +8,9 @@ __author__ = 'nekocode'
 
 
 class VoteAccount(WeixinHelper):
-    def __init__(self, account_config, name, display_id, avatar_url, qrcode_url):
-        WeixinHelper.__init__(self, account_config)
+    def __init__(self, app_id, app_secret, token, name, display_id, avatar_url, qrcode_url,
+                 aes_key=None, access_token=None):
+        WeixinHelper.__init__(self, app_id, app_secret, token, aes_key, access_token)
 
         self.name = name
         self.display_id = display_id
@@ -61,9 +63,10 @@ class VoteAccount(WeixinHelper):
 
 
 class SchoolAccount(WeixinHelper):
-    def __init__(self, account_config, vote_account_id, school_name, voting_count,
-                 name, display_id, avatar_url, qrcode_url, intro_url, intro_img_url):
-        WeixinHelper.__init__(self, account_config)
+    def __init__(self, app_id, app_secret, token, vote_account_id, school_name, voting_count,
+                 name, display_id, avatar_url, qrcode_url, intro_url, intro_img_url,
+                 aes_key=None, access_token=None):
+        WeixinHelper.__init__(self, app_id, app_secret, token, aes_key, access_token)
 
         self.vote_account_id = vote_account_id
         self.school_name = school_name
@@ -137,31 +140,31 @@ vote_accounts = dict()
 db = None
 
 
-def init_db(host_and_port, db_name, user, pwd):
+def init_db():
     global db
-    db = torndb.Connection(host_and_port, db_name, user, pwd)
+    db = torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
 
-    create_tables(db_name)
+    load_accounts()
+
+
+def load_accounts():
+    global db
 
     rlt = db.query("select * from vote_accounts")
     for account in rlt:
-        vote_accounts[account.app_id] = VoteAccount({
-            'app_id': account.app_id,
-            'app_secret': account.app_secret,
-            'token': account.token,
-            'aes_key': account.aes_key
-        }, account.name, account.display_id, account.avatar_url, account.qrcode_url)
+        vote_accounts[account.app_id] = VoteAccount(
+            account.app_id, account.app_secret, account.token,
+            account.name, account.display_id, account.avatar_url, account.qrcode_url,
+            account.aes_key, account.access_token)
 
     rlt = db.query("select * from school_accounts")
     for account in rlt:
-        school_account = SchoolAccount({
-            'app_id': account.app_id,
-            'app_secret': account.app_secret,
-            'token': account.token,
-            'aes_key': account.aes_key
-        }, account.vote_account_id, account.school_name, account.voting_count,
+        school_account = SchoolAccount(
+            account.app_id, account.app_secret, account.token,
+            account.vote_account_id, account.school_name, account.voting_count,
             account.name, account.display_id, account.avatar_url, account.qrcode_url,
-            account.intro_url, account.intro_img_url)
+            account.intro_url, account.intro_img_url,
+            account.aes_key, account.access_token)
 
         school_accounts[account.app_id] = school_account
 
@@ -169,12 +172,14 @@ def init_db(host_and_port, db_name, user, pwd):
 def create_tables(db_name):
     if if_table_exist(db_name, 'vote_accounts') == 0:
         db.execute("create table vote_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
-                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
+                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, access_token VARCHAR(60), "
+                   "admin_id INTEGER, "
                    "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512))")
 
     if if_table_exist(db_name, 'school_accounts') == 0:
         db.execute("create table school_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
-                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, "
+                   "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, access_token VARCHAR(60), "
+                   "admin_id INTEGER, "
                    "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), voting_count INTEGER, "
                    "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512), "
                    "intro_url VARCHAR(512), intro_img_url VARCHAR(512))")
@@ -195,6 +200,11 @@ def create_tables(db_name):
         db.execute("create table vote_codes(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
                    "class_id INTEGER, voted BOOLEAN, invite_id INTEGER)")
 
+    if if_table_exist(db_name, 'users') == 0:
+        # 使用 id 做投票码
+        db.execute("create table users(id INTEGER PRIMARY KEY AUTO_INCREMENT, username VARCHAR(60) NOT NULL, "
+                   "password VARCHAR(60), access_vote BOOLEAN NOT NULL)")
+
 
 def if_table_exist(db_name, table_name):
     count = db.get("select count(*) as count from information_schema.tables "
@@ -202,4 +212,8 @@ def if_table_exist(db_name, table_name):
     return count.count
 
 
+if __name__ == '__main__':
+    db = torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
+
+    create_tables("weixin_vote")
 

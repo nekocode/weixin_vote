@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head> 
+  <meta charset="utf-8" /> 
+  <title>微信投票 管理后台</title> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <link href="{{ static_url("css/bootstrap.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/site.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/bootstrap-responsive.css") }}" rel="stylesheet" /> 
+ </head> 
+ <body> 
+  <div class="navbar navbar-fixed-top"> 
+   <div class="navbar-inner"> 
+    <div class="container-fluid"> 
+     <a class="brand" href="#">微信投票 管理后台</a> 
+    </div> 
+   </div> 
+  </div> 
+  <div class="container-fluid"> 
+   <div class="row-fluid"> 
+    <div class="span6"> 
+      
+     <div class="row-fluid"> 
+      <div class="page-header"> 
+       <h1>登陆系统 <small>输入账号密码登陆管理后台</small></h1> 
+      </div> 
+      
+      <form class="form-horizontal" action="/login" method="post"> 
+       <fieldset> 
+        <div class="control-group"> 
+         <label class="control-label">账户</label> 
+         <div class="controls"> 
+          <input type="text" class="input-xlarge" name="name" value="root" /> 
+         </div> 
+        </div> 
+        <div class="control-group"> 
+         <label class="control-label">密码</label> 
+         <div class="controls"> 
+          <input type="password" class="input-xlarge" name="pwd" value="123" /> 
+         </div> 
+        </div> 
+        <div class="form-actions"> 
+         <input type="submit" class="btn btn-success btn-large" value="登陆" /> 
+        </div> 
+       </fieldset> 
+      </form> 
+     </div> 
+     
+    </div> 
+   </div> 
+   <hr /> 
+  </div> 
+  <script src="{{ static_url("js/jquery.js") }}"></script> 
+  <script src="{{ static_url("js/bootstrap.min.js") }}"></script>   
+ </body>
+</html>

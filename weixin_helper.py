@@ -9,7 +9,7 @@ import threading
 import time
 import httplib2
 from xml.etree import cElementTree
-# from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
+from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
 
 __author__ = 'nekocode'
 
@@ -30,15 +30,11 @@ def _cdata(data):
 
 
 class WeixinHelper:
-    def __init__(self, account):
-        if not ('app_id' in account and 'app_secret' in account and 'token' in account and 'aes_key' in account):
-            raise AccountPropertyNotDefineException
-
-        self.account = account
-        self.app_id = account['app_id']
-        self.app_secret = account['app_secret']
-        self.token = account['token']
-        self.aes_key = account['aes_key']
+    def __init__(self, app_id, app_secret, token, aes_key=None, access_token=None):
+        self.app_id = app_id
+        self.app_secret = app_secret
+        self.token = token
+        self.aes_key = aes_key
 
         self.access_token = None
         self.expires_in = 0     # 凭证有效时间，单位：秒
@@ -83,20 +79,18 @@ class WeixinHelper:
             return rlt
 
     def decrypt_xml(self, xml, arg_signature, arg_create_time, arg_nonce):
-        # crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
-        # rlt, decryp_xml = crypter.DecryptMsg(xml, arg_signature, arg_create_time, arg_nonce)
-        # return decryp_xml
-        return xml
+        crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
+        rlt, decryp_xml = crypter.DecryptMsg(xml, arg_signature, arg_create_time, arg_nonce)
+        return decryp_xml
 
     def _encrypt_xml(self, xml, create_time):
-        # crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
-        # rlt, encrypt_xml = crypter.EncryptMsg(xml, nonce_str(), create_time)
-        # if rlt != 0:
-        #     print 'WXBizMsgCrypt error:' + str(rlt)
-        #     return 'success'    # pass
-        #
-        # return encrypt_xml
-        return xml
+        crypter = WXBizMsgCrypt(self.token, self.aes_key, self.app_id)
+        rlt, encrypt_xml = crypter.EncryptMsg(xml, nonce_str(), create_time)
+        if rlt != 0:
+            print 'WXBizMsgCrypt error:' + str(rlt)
+            return 'success'    # pass
+
+        return encrypt_xml
 
     def text_msg(self, to_user, from_user, text, crypt=False):
         create_time = str(int(time.time()))
