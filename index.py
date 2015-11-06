@@ -150,7 +150,7 @@ class VoteCodeHandler(RequestHandler):
         account_name = account.name
         account_id = account.display_id
 
-        self.render("static/vote_code.html", vote_code=vote_code, qrcode_url=qrcode_url,
+        self.render("static/vote/vote_code.html", vote_code=vote_code, qrcode_url=qrcode_url,
                     account_name=account_name, account_id=account_id)
 
 
@@ -172,7 +172,7 @@ class QRCodeHandler(RequestHandler):
         account_name = account.name
         account_id = account.display_id
 
-        self.render("static/qrcode.html", qrcode_url=qrcode_url,
+        self.render("static/vote/qrcode.html", qrcode_url=qrcode_url,
                     account_name=account_name, account_id=account_id)
 
 
@@ -183,7 +183,7 @@ class InviteCodeHandler(RequestHandler):
     def get(self, invite_code):
         invite_code = 'I%05d' % int(invite_code)
 
-        self.render("static/invite_code.html", invite_code=invite_code)
+        self.render("static/vote/invite_code.html", invite_code=invite_code)
 
 
 class RankHandler(RequestHandler):
@@ -204,7 +204,7 @@ class RankHandler(RequestHandler):
         class_count = len(class_rank_rows)
         vote_total_count = account.voting_count
 
-        self.render("static/ranking.html",
+        self.render("static/vote/ranking.html",
                     class_rank_rows=class_rank_rows, person_rank_rows=person_rank_rows,
                     avatar_url=avatar_url, qrcode_url=qrcode_url, school_name=school_name, class_count=class_count,
                     vote_total_count=vote_total_count)

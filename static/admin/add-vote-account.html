@@ -4,9 +4,9 @@
   <meta charset="utf-8" /> 
   <title>微信投票 管理后台</title> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
-  <link href="css/bootstrap.css" rel="stylesheet" /> 
-  <link href="css/site.css" rel="stylesheet" /> 
-  <link href="css/bootstrap-responsive.css" rel="stylesheet" />
+  <link href="{{ static_url("css/bootstrap.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/site.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/bootstrap-responsive.css") }}" rel="stylesheet" /> 
  </head> 
  <body> 
   <div class="navbar navbar-fixed-top"> 
@@ -18,21 +18,9 @@
   </div> 
   <div class="container-fluid"> 
    <div class="row-fluid"> 
-    <div class="span3"> 
-     <div class="well sidebar-nav"> 
-      <ul class="nav nav-list"> 
-       <li class="nav-header"><i class="icon-wrench"></i> 大家一起来投票</li> 
-       <li class="nav-header"><i class="icon-signal"></i> 账号设置</li> 
-       <li class="active"><a href="vote-accounts.html">大号列表</a></li> 
-       <li><a href="sub-accounts.html">小号列表</a></li> 
-       <li class="nav-header"><i class="icon-filter"></i> 其他属性</li> 
-       <li><a href="classes.html">班级列表</a></li> 
-       <li><a href="peoples.html">投票用户</a></li> 
-       <li class="nav-header"><i class="icon-user"></i> 账户操作</li> 
-       <li><a href="login.html">退出</a></li> 
-      </ul> 
-     </div> 
-    </div> 
+    
+    {% module SideBar(select=0) %}
+    
     <div class="span9"> 
      <div class="row-fluid"> 
       <div class="page-header"> 
@@ -83,11 +71,9 @@
     </div> 
    </div> 
    <hr /> 
-   <footer class="well">
-     &copy; nc 
-   </footer> 
+   {% module Footer() %}
   </div> 
-  <script src="js/jquery.js"></script> 
-  <script src="js/bootstrap.min.js"></script>   
+  <script src="{{ static_url("js/jquery.js") }}"></script> 
+  <script src="{{ static_url("js/bootstrap.min.js") }}"></script>   
  </body>
 </html>

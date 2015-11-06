@@ -171,13 +171,16 @@ def load_accounts():
 
 def create_tables(db_name):
     if if_table_exist(db_name, 'vote_accounts') == 0:
-        db.execute("create table vote_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
+        db.execute("create table vote_accounts(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                   "app_id VARCHAR(20), app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, access_token VARCHAR(60), "
                    "admin_id INTEGER, "
-                   "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512))")
+                   "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512), "
+                   "active BOOLEAN NOT NULL)")
 
     if if_table_exist(db_name, 'school_accounts') == 0:
-        db.execute("create table school_accounts(app_id VARCHAR(20) PRIMARY KEY, app_secret VARCHAR(40) NOT NULL, "
+        db.execute("create table school_accounts(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                   "app_id VARCHAR(20), app_secret VARCHAR(40) NOT NULL, "
                    "token VARCHAR(20) NOT NULL, aes_key VARCHAR(60) NOT NULL, access_token VARCHAR(60), "
                    "admin_id INTEGER, "
                    "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), voting_count INTEGER, "
