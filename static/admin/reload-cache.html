@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head> 
+  <meta charset="utf-8" /> 
+  <title>微信投票 管理后台</title> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <link href="{{ static_url("css/bootstrap.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/site.css") }}" rel="stylesheet" /> 
+  <link href="{{ static_url("css/bootstrap-responsive.css") }}" rel="stylesheet" /> 
+ </head> 
+ <body> 
+  <div class="navbar navbar-fixed-top"> 
+   <div class="navbar-inner"> 
+    <div class="container-fluid"> 
+     <a class="brand" href="#">微信投票 管理后台</a> 
+    </div> 
+   </div> 
+  </div> 
+  <div class="container-fluid"> 
+   <div class="row-fluid"> 
+    
+    {% module SideBar(select=4) %}
+    
+    <div class="span9"> 
+     <div class="row-fluid"> 
+      <div class="page-header"> 
+       <h1>部署账号 <small>对公众号信息更改后，可能需要进行部署才能生效</small></h1> 
+      </div> 
+      
+      <a href="reload_cache?refresh=1" class="btn btn-success">部署所有更改</a>
+      
+     </div> 
+    </div> 
+   </div> 
+   <hr /> 
+   {% module Footer() %}
+  </div> 
+  <script src="{{ static_url("js/jquery.js") }}"></script> 
+  <script src="{{ static_url("js/bootstrap.min.js") }}"></script>   
+ </body>
+</html>

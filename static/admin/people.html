@@ -44,7 +44,6 @@
          <th>微信昵称</th> 
          <th>投票班级</th> 
          <th>邀请票数</th> 
-         <th></th> 
         </tr> 
        </thead> 
        <tbody> 
@@ -54,15 +53,6 @@
   <td><strong>{{ row.nickname }}</strong> ({{ row.open_id }})</td>
   <td>{{ row.class_name }}</td>
   <td>{{ row.inviting_count }}</td>
-  <td WIDTH=100>
-    <div class="btn-group">
-      <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a>
-      <ul class="dropdown-menu">
-        <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li>
-        <li><a href="#"><i class="icon-trash"></i> 删除</a></li>
-      </ul>
-    </div>
-  </td>
 </tr>
 {% end %}
         

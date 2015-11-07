@@ -167,9 +167,97 @@ class LogoutHandler(BaseHandler):
     def data_received(self, chunk):
         pass
 
+    @tornado.web.authenticated
     def get(self):
         self.clear_cookie("user")
         self.redirect('/login', permanent=True)
+
+
+class ReloadCacheHandler(BaseHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self):
+        refresh = int(self.get_argument('refresh', 0))
+
+        if refresh == 1:
+            pass    # TODO
+
+        self.render("static/admin/reload-cache.html")
+
+
+class EditHandler(BaseHandler):
+    def __init__(self, _application, request, **kwargs):
+        BaseHandler.__init__(self, _application, request)
+        self.title_prefix = kwargs['title_prefix']
+
+    def data_received(self, chunk):
+        pass
+
+    def get(self, table):
+        global db
+        _id = int(self.get_argument('id', 0))
+
+        title = ""
+        rows = []
+        if table == 'vote_accounts':
+            title = self.title_prefix + u'投票账号'
+
+            if self.title_prefix == u"编辑":
+                rlt = db.get("select * from vote_accounts where id='%d'" % _id)
+                if rlt is None:
+                    self.redirect('/%s' % table, permanent=True)
+                    return
+
+            rows.append(dict(id='display_id', name='公众号微信号',
+                             str='<input type="text" class="input-xlarge" id="display_id" value="" />'))
+
+            rows.append(dict(id='active', name='接受投票',
+                             str='<input type="checkbox" id="active" value="1" checked />'))
+
+            selections = """
+<select id="role">
+<option value="admin" selected>Admin</option>
+<option value="mod">Moderator</option>
+<option value="user">User</option>
+</select>
+"""
+            rows.append(dict(id='role', name='测试', str=selections))
+
+        elif table == 'sub_accounts':
+            title = self.title_prefix + u'小号'
+            rlt = db.get("select * from school_accounts where id='%d'" % _id)
+            if rlt is None:
+                self.redirect('/%s' % table, permanent=True)
+                return
+
+        elif table == 'classes':
+            title = self.title_prefix + u'班级'
+            rlt = db.get("select * from classes where id='%d'" % _id)
+            if rlt is None:
+                self.redirect('/%s' % table, permanent=True)
+                return
+
+        else:
+            self.write("404: Page not found.")
+            return
+
+        self.render("static/admin/edit.html", title=title, rows=rows)
+
+    def post(self, table):
+        global db
+        _id = int(self.get_argument('id', 0))
+
+        if table == 'vote_accounts':
+            rlt = db.get("select * from vote_accounts where id='%d'" % _id)
+
+        elif table == 'sub_accounts':
+            rlt = db.get("select * from school_accounts where id='%d'" % _id)
+
+        elif table == 'classes':
+            rlt = db.get("select * from classes where id='%d'" % _id)
+
+        self.redirect('/%s' % table, permanent=True)
 
 
 if __name__ == '__main__':
@@ -187,10 +275,15 @@ if __name__ == '__main__':
         (r'/', tornado.web.RedirectHandler, {"url": "/login", "permanent": False}),
         (r"/login", LoginHandler),
         (r"/logout", LogoutHandler),
+        (r"/reload_cache", ReloadCacheHandler),
+
         (r"/vote_accounts", VoteAccountsHandler),
         (r"/sub_accounts", SubAccountsHandler),
         (r"/classes", ClassesHandler),
         (r"/people", PeopleHandler),
+
+        (r"/(.*)/edit", EditHandler, dict(title_prefix=u'编辑')),
+        (r"/(.*)/add", EditHandler, dict(title_prefix=u'添加')),
     ], **settings)
 
     application.listen(80)
