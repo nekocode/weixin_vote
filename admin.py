@@ -203,6 +203,7 @@ class EditHandler(BaseHandler):
         if table == 'vote_accounts':
             title = self.title_prefix + u'投票账号'
 
+            rlt = None
             if self.title_prefix == u"编辑":
                 rlt = db.get("select * from vote_accounts where id='%d'" % _id)
                 if rlt is None:
@@ -210,10 +211,24 @@ class EditHandler(BaseHandler):
                     return
 
             rows.append(dict(id='display_id', name='公众号微信号',
-                             str='<input type="text" class="input-xlarge" id="display_id" value="" />'))
+                             str='<input type="text" class="input-xlarge" id="display_id" value="%s" />'
+                                 % (rlt.display_id if rlt is not None else "")))
+
+            rows.append(dict(id='app_id', name='app_id',
+                             str='<input type="text" class="input-xlarge" id="app_id" value="%s" />'
+                                 % (rlt.app_id if rlt is not None else "")))
+
+            rows.append(dict(id='app_secret', name='app_secret',
+                             str='<input type="text" class="input-xlarge" id="app_secret" value="%s" />'
+                                 % (rlt.app_secret if rlt is not None else "")))
+
+            rows.append(dict(id='token', name='token',
+                             str='<input type="text" class="input-xlarge" id="token" value="%s" />'
+                                 % (rlt.token if rlt is not None else "")))
 
             rows.append(dict(id='active', name='接受投票',
-                             str='<input type="checkbox" id="active" value="1" checked />'))
+                             str='<input type="checkbox" id="active" value="1" %s />'
+                                 % ("checked" if rlt is not None and rlt.active == 1 else "")))
 
             selections = """
 <select id="role">

@@ -27,7 +27,7 @@
        <h1>{{ title }}</h1> 
       </div> 
       
-<form class="form-horizontal">
+<form class="form-horizontal" method="post">
 	<fieldset>
 		
 		{% for row in rows %}
@@ -40,7 +40,7 @@
 		{% end %}
 
 		<div class="form-actions">
-			<input type="submit" class="btn btn-success btn-large" value="确定" />
+			<input type="submit" class="btn btn-success btn-large" value="确定"/>
 			<a class="btn btn-large" href="#" onClick="javascript :history.back(-1);">取消</a>
 		</div>
 	</fieldset>
