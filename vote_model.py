@@ -185,7 +185,8 @@ def create_tables(db_name):
                    "admin_id INTEGER, "
                    "vote_account_id VARCHAR(20) NOT NULL, school_name VARCHAR(60), voting_count INTEGER, "
                    "name VARCHAR(20), display_id VARCHAR(20), avatar_url VARCHAR(512), qrcode_url VARCHAR(512), "
-                   "intro_url VARCHAR(512), intro_img_url VARCHAR(512))")
+                   "intro_url VARCHAR(512), intro_img_url VARCHAR(512), "
+                   "active BOOLEAN NOT NULL)")
 
     if if_table_exist(db_name, 'classes') == 0:
         # 使用 id 做班级码
