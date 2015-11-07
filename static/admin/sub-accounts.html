@@ -37,41 +37,49 @@
          <th>学校名称</th> 
          <th>介绍页面 URL</th> 
          <th>介绍页面背景图 URL</th> 
+         <th>绑定投票账号</th> 
          <th></th> 
         </tr> 
        </thead> 
        <tbody> 
-        <tr class="list-users"> 
-         <td><strong>华商人</strong> (gdhscer)</td> 
-         <td>12340</td> 
-         <td>wxfcc58491aa0b07d6</td> 
-         <td>d4624c36b6795d1d99dcf0547af5443d</td> 
-         <td>nekocode</td> 
-         <td>华南商业大学</td> 
-         <td><a href="#" class="btn btn-mini">查看</a></td> 
-         <td><a href="#" class="btn btn-mini">查看</a></td> 
-         <td> 
-          <div class="btn-group"> 
-           <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a> 
-           <ul class="dropdown-menu"> 
-            <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li> 
-            <li><a href="#"><i class="icon-trash"></i> 删除</a></li> 
-            <li class="nav-header">其他</li> 
-            <li><a href="#"><i class="icon-lock"></i> 公众号信息</a></li> 
-           </ul> 
-          </div> </td> 
-        </tr> 
+         
+{% for row in rows %}
+<tr class="list-users">
+  <td><strong>{{ row.name }}</strong> ({{ row.display_id }})</td>
+  <td>{{ row.voting_count }}</td>
+  <td>{{ row.app_id }}</td>
+  <td>{{ row.app_secret }}</td>
+  <td>{{ row.token }}</td>
+  <td>{{ row.school_name }}</td>
+  <td><a href="{{ row.intro_url }}" target="_blank" class="btn btn-mini">查看</a></td>
+  <td><a href="{{ row.intro_img_url }}" target="_blank" class="btn btn-mini">查看</a></td>
+  <td><span class="label label-info">{{ row.vote_account_name }}</span></td>
+  <td WIDTH=100>
+    <div class="btn-group">
+      <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a>
+      <ul class="dropdown-menu">
+        <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li>
+        <li><a href="#"><i class="icon-trash"></i> 删除</a></li>
+      </ul>
+    </div>
+  </td>
+</tr>
+{% end %}
+        
        </tbody> 
       </table> 
       <div class="pagination"> 
        <ul> 
-        <li><a href="#">Prev</a></li> 
-        <li class="active"> <a href="#">1</a> </li> 
-        <li><a href="#">2</a></li> 
-        <li><a href="#">Next</a></li> 
+        <li><a href="sub_accounts?p={{ p-1 if not p==1 else p }}">Prev</a></li> 
+        
+            {% for num in pages %}
+            <li {% if num == p %}class="active"{% end %}> <a href="sub_accounts?p={{ num }}">{{ num }}</a> </li>
+            {% end %}
+              
+        <li><a href="sub_accounts?p={{ p+1 if not p==len(pages) else p }}">Next</a></li> 
        </ul> 
       </div> 
-      <a href="new-user.html" class="btn btn-success">添加公众号</a> 
+      <a href="#" class="btn btn-success">添加公众号</a> 
       <a href="#" class="btn btn-info">按投票数排序</a> 
      </div> 
     </div> 

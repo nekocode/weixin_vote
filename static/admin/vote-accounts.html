@@ -42,27 +42,24 @@
             <tbody>
               
                 
-                {% for row in rows %}
+{% for row in rows %}
 <tr class="list-users">
 <td><strong>{{ row.name }}</strong> ({{ row.display_id }})</td>
 <td>{{ row.app_id }}</td>
 <td>{{ row.app_secret }}</td>
 <td>{{ row.token }}</td>
 <td>{% if row.active == 1 %}<span class="label label-success">接受投票中</span>{% else %}<span class="label label-inverse">投票关闭</span>{% end %}</td>
-<td>
+<td WIDTH=100>
   <div class="btn-group">
     <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a>
     <ul class="dropdown-menu">
       <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li>
       <li><a href="#"><i class="icon-trash"></i> 删除</a></li>
-      <li class="nav-header">其他</li>
-      <li><a href="#"><i class="icon-play-circle"></i> 公众号信息</a></li>
-      <li><a href="#"><i class="icon-lock"></i> 关闭投票</a></li>
     </ul>
   </div>
 </td>
 </tr>
-                {% end %}
+{% end %}
                 
             </tbody>
           </table>
@@ -70,14 +67,14 @@
           
           <div class="pagination">
             <ul>
-              <li><a href="vote_accounts?p={{ p-1 if not p==1 else p }}&lid={{ lid }}">Prev</a></li>
+              <li><a href="vote_accounts?p={{ p-1 if not p==1 else p }}">Prev</a></li>
               
               
               {% for num in pages %}
-              <li {% if num == p %}class="active"{% end %}> <a href="vote_accounts?p={{ num }}&lid={{ lid }}">{{ num }}</a> </li>
+              <li {% if num == p %}class="active"{% end %}> <a href="vote_accounts?p={{ num }}">{{ num }}</a> </li>
               {% end %}
               
-              <li><a href="vote_accounts?p={{ p+1 if not p==len(pages) else p }}&lid={{ lid }}">Next</a></li>
+              <li><a href="vote_accounts?p={{ p+1 if not p==len(pages) else p }}">Next</a></li>
             </ul>
           </div>
           
