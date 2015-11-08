@@ -8,7 +8,7 @@ from tornado.web import Application, RequestHandler, os
 from weixin_sougou import get_account_info
 
 db = None
-PER_PAGE_ROWS = 2
+PER_PAGE_ROWS = 20
 
 
 def get_page_rows(p, table_name, where=''):
