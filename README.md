@@ -41,5 +41,5 @@ DB_PWD = ''
 
 
 ## admin
-![](admin_1.jpg "")
-![](admin_2.jpg "")
+![](art/admin_1.jpg "")
+![](art/admin_2.jpg "")
