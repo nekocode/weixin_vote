@@ -60,7 +60,7 @@
     <div class="btn-group">
       <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a>
       <ul class="dropdown-menu">
-        <li><a href="#"><i class="icon-pencil"></i> 编辑</a></li>
+        <li><a href="/sub_accounts/edit?id={{ row.id }}"><i class="icon-pencil"></i> 编辑</a></li>
         <li><a href="#"><i class="icon-trash"></i> 删除</a></li>
       </ul>
     </div>
@@ -81,8 +81,7 @@
         <li><a href="sub_accounts?p={{ p+1 if not p==len(pages) else p }}">Next</a></li> 
        </ul> 
       </div> 
-      <a href="#" class="btn btn-success">添加公众号</a> 
-      <a href="#" class="btn btn-info">按投票数排序</a> 
+      <a href="sub_accounts/add" class="btn btn-success">添加公众号</a> 
      </div> 
     </div> 
    </div> 

@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import MySQLdb
 import config
 import torndb
 import tornado
 from tornado.web import Application, RequestHandler, os
+from weixin_sougou import get_account_info
 
 db = None
 PER_PAGE_ROWS = 2
@@ -194,85 +196,316 @@ class EditHandler(BaseHandler):
     def data_received(self, chunk):
         pass
 
+    @tornado.web.authenticated
     def get(self, table):
         global db
+        userid = int(tornado.escape.xhtml_escape(self.current_user))
         _id = int(self.get_argument('id', 0))
 
+        sidebar_select = 0
         title = ""
         rows = []
         if table == 'vote_accounts':
+            sidebar_select = 0
             title = self.title_prefix + u'投票账号'
 
             rlt = None
             if self.title_prefix == u"编辑":
-                rlt = db.get("select * from vote_accounts where id='%d'" % _id)
+                rlt = db.get("select * from vote_accounts where id=%d" % _id)
                 if rlt is None:
                     self.redirect('/%s' % table, permanent=True)
                     return
 
-            rows.append(dict(id='display_id', name='公众号微信号',
-                             str='<input type="text" class="input-xlarge" id="display_id" value="%s" />'
+            rows.append(dict(name='公众号微信号',
+                             str='<input type="text" class="input-xlarge" name="display_id" value="%s" />'
                                  % (rlt.display_id if rlt is not None else "")))
 
-            rows.append(dict(id='app_id', name='app_id',
-                             str='<input type="text" class="input-xlarge" id="app_id" value="%s" />'
+            rows.append(dict(name='app_id',
+                             str='<input type="text" class="input-xlarge" name="app_id" value="%s" />'
                                  % (rlt.app_id if rlt is not None else "")))
 
-            rows.append(dict(id='app_secret', name='app_secret',
-                             str='<input type="text" class="input-xlarge" id="app_secret" value="%s" />'
+            rows.append(dict(name='app_secret',
+                             str='<input type="text" class="input-xlarge" name="app_secret" value="%s" />'
                                  % (rlt.app_secret if rlt is not None else "")))
 
-            rows.append(dict(id='token', name='token',
-                             str='<input type="text" class="input-xlarge" id="token" value="%s" />'
+            rows.append(dict(name='token',
+                             str='<input type="text" class="input-xlarge" name="token" value="%s" />'
                                  % (rlt.token if rlt is not None else "")))
 
-            rows.append(dict(id='active', name='接受投票',
-                             str='<input type="checkbox" id="active" value="1" %s />'
-                                 % ("checked" if rlt is not None and rlt.active == 1 else "")))
-
-            selections = """
-<select id="role">
-<option value="admin" selected>Admin</option>
-<option value="mod">Moderator</option>
-<option value="user">User</option>
-</select>
-"""
-            rows.append(dict(id='role', name='测试', str=selections))
+            rows.append(dict(name='接受投票',
+                             str='<input type="checkbox" name="active" value=1 %s />'
+                                 % ("checked" if rlt is None or rlt.active == 1 else "")))
 
         elif table == 'sub_accounts':
+            sidebar_select = 1
             title = self.title_prefix + u'小号'
-            rlt = db.get("select * from school_accounts where id='%d'" % _id)
+
+            rlt = None
+            if self.title_prefix == u"编辑":
+                rlt = db.get("select * from school_accounts where id=%d" % _id)
+                if rlt is None:
+                    self.redirect('/%s' % table, permanent=True)
+                    return
+
+            rows.append(dict(name='公众号微信号',
+                             str='<input type="text" class="input-xlarge" name="display_id" value="%s" />'
+                                 % (rlt.display_id if rlt is not None else "")))
+
+            rows.append(dict(name='app_id',
+                             str='<input type="text" class="input-xlarge" name="app_id" value="%s" />'
+                                 % (rlt.app_id if rlt is not None else "")))
+
+            rows.append(dict(name='app_secret',
+                             str='<input type="text" class="input-xlarge" name="app_secret" value="%s" />'
+                                 % (rlt.app_secret if rlt is not None else "")))
+
+            rows.append(dict(name='token',
+                             str='<input type="text" class="input-xlarge" name="token" value="%s" />'
+                                 % (rlt.token if rlt is not None else "")))
+
+            rows.append(dict(name='学校名字',
+                             str='<input type="text" class="input-xlarge" name="school_name" value="%s" />'
+                                 % (rlt.school_name if rlt is not None else "")))
+
+            rows.append(dict(name='介绍页面 URL',
+                             str='<input type="text" class="input-xlarge" name="intro_url" value="%s" />'
+                                 % (rlt.intro_url if rlt is not None else "")))
+
+            rows.append(dict(name='介绍页面背景图 URL',
+                             str='<input type="text" class="input-xlarge" name="intro_img_url" value="%s" />'
+                                 % (rlt.intro_img_url if rlt is not None else "")))
+
+            vote_accounts = db.query("select * from vote_accounts where admin_id=%d" % userid)
+            selections = '<select name="vote_account_id">'
+            for vote_account in vote_accounts:
+                selections += '<option value="%s">%s(%s)</option>' \
+                              % (vote_account.app_id,
+                                 tornado.escape.xhtml_escape(vote_account.name),
+                                 vote_account.display_id)
+            selections += '</select>'
+
+            rows.append(dict(name='对应投票公众号', str=selections))
+
+            rows.append(dict(name='接受投票',
+                             str='<input type="checkbox" name="active" value=1 %s />'
+                                 % ("checked" if rlt is not None and rlt.active == 1 else "")))
+
+        elif table == 'classes':
+            sidebar_select = 2
+            title = self.title_prefix + u'班级'
+
+            sid = int(self.get_argument("sid", 0))
+            rlt = db.get("select * from school_accounts where id=%d" % sid)
             if rlt is None:
                 self.redirect('/%s' % table, permanent=True)
                 return
 
-        elif table == 'classes':
-            title = self.title_prefix + u'班级'
-            rlt = db.get("select * from classes where id='%d'" % _id)
-            if rlt is None:
-                self.redirect('/%s' % table, permanent=True)
-                return
+            rlt = None
+            if self.title_prefix == u"编辑":
+                rlt = db.get("select * from classes where id=%d" % _id)
+                if rlt is None:
+                    self.redirect('/%s' % table, permanent=True)
+                    return
+
+            rows.append(dict(name='班级名称',
+                             str='<input type="text" class="input-xlarge" name="class_name" value="%s" />'
+                                 % (rlt.class_name if rlt is not None else "")))
 
         else:
             self.write("404: Page not found.")
             return
 
-        self.render("static/admin/edit.html", title=title, rows=rows)
+        self.render("static/admin/edit.html",sidebar_select=sidebar_select, title=title, rows=rows)
 
+    @tornado.web.authenticated
     def post(self, table):
         global db
+        userid = int(tornado.escape.xhtml_escape(self.current_user))
         _id = int(self.get_argument('id', 0))
 
         if table == 'vote_accounts':
-            rlt = db.get("select * from vote_accounts where id='%d'" % _id)
+            display_id = self.get_body_argument('display_id')
+            app_id = MySQLdb.escape_string(self.get_body_argument('app_id'))
+            rlt = db.get("select * from vote_accounts where id=%d" % _id)
+
+            if rlt is None:
+                exist = db.get("select * from vote_accounts where app_id='%s'" % app_id)
+                if exist is not None:
+                    self.write(u"该 app_id 已被登记，请使用其他公众号")
+                    return
+                exist = db.get("select * from school_accounts where app_id='%s'" % app_id)
+                if exist is not None:
+                    self.write(u"该 app_id 已被登记，请使用其他公众号")
+                    return
+
+                account_info = get_account_info(display_id)
+
+                if account_info is None:
+                    self.write(u"找不到该公众号")
+                    return
+
+                # 添加
+                sql = "insert into vote_accounts(" \
+                      "app_id, app_secret, token, aes_key, admin_id, name, display_id, avatar_url, qrcode_url, active) " \
+                      "values('%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', %s)" \
+                      % (app_id,
+                         MySQLdb.escape_string(self.get_body_argument('app_secret')),
+                         MySQLdb.escape_string(self.get_body_argument('token')),
+                         "", userid,
+                         MySQLdb.escape_string(account_info['name'].encode('utf8')),
+                         MySQLdb.escape_string(display_id),
+                         MySQLdb.escape_string(account_info['logo']),
+                         MySQLdb.escape_string(account_info['qr_code']),
+                         "false" if self.get_body_argument('active', None) is None else "true")
+                try:
+                    db.insert(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
+
+            else:
+                # 编辑
+                if not rlt.display_id == display_id:
+                    # 公众号改变，重新获取账户信息
+                    account_info = get_account_info(display_id)
+                else:
+                    account_info = dict(name=rlt.name, logo=rlt.avatar_url, qr_code=rlt.qrcode_url)
+
+                sql = "update vote_accounts set app_id='%s', app_secret='%s', token='%s', name='%s', " \
+                      "display_id='%s', avatar_url='%s', qrcode_url = '%s', active = %s where id=%d" \
+                      % (MySQLdb.escape_string(self.get_body_argument('app_id')),
+                         MySQLdb.escape_string(self.get_body_argument('app_secret')),
+                         MySQLdb.escape_string(self.get_body_argument('token')),
+                         MySQLdb.escape_string(account_info['name'].encode('utf8')),
+                         MySQLdb.escape_string(display_id),
+                         MySQLdb.escape_string(account_info['logo']),
+                         MySQLdb.escape_string(account_info['qr_code']),
+                         "false" if self.get_body_argument('active', None) is None else "true",
+                         _id)
+
+                try:
+                    db.update(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
 
         elif table == 'sub_accounts':
-            rlt = db.get("select * from school_accounts where id='%d'" % _id)
+            display_id = self.get_body_argument('display_id')
+            app_id = MySQLdb.escape_string(self.get_body_argument('app_id'))
+            rlt = db.get("select * from school_accounts where id=%d" % _id)
+
+            if rlt is None:
+                # 添加
+
+                exist = db.get("select * from vote_accounts where app_id='%s'" % app_id)
+                if exist is not None:
+                    self.write(u"该 app_id 已被登记，请使用其他公众号")
+                    return
+                exist = db.get("select * from school_accounts where app_id='%s'" % app_id)
+                if exist is not None:
+                    self.write(u"该 app_id 已被登记，请使用其他公众号")
+                    return
+
+                account_info = get_account_info(display_id)
+
+                if account_info is None:
+                    self.write(u"找不到该公众号")
+                    return
+
+                sql = "insert into school_accounts(" \
+                      "app_id, app_secret, token, aes_key, admin_id, name, display_id, avatar_url, qrcode_url, active, " \
+                      "school_name, voting_count, intro_url, intro_img_url, vote_account_id) " \
+                      "values('%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', %s, " \
+                      "'%s', %d, '%s', '%s', '%s')" \
+                      % (MySQLdb.escape_string(self.get_body_argument('app_id')),
+                         MySQLdb.escape_string(self.get_body_argument('app_secret')),
+                         MySQLdb.escape_string(self.get_body_argument('token')),
+                         "", userid,
+                         MySQLdb.escape_string(account_info['name'].encode('utf8')),
+                         MySQLdb.escape_string(display_id),
+                         MySQLdb.escape_string(account_info['logo']),
+                         MySQLdb.escape_string(account_info['qr_code']),
+                         "false" if self.get_body_argument('active', None) is None else "true",
+                         MySQLdb.escape_string(self.get_body_argument('school_name').encode('utf8')),
+                         0,
+                         MySQLdb.escape_string(self.get_body_argument('intro_url')),
+                         MySQLdb.escape_string(self.get_body_argument('intro_img_url')),
+                         MySQLdb.escape_string(self.get_body_argument('vote_account_id')))
+                try:
+                    db.insert(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
+
+            else:
+                # 编辑
+                if not rlt.display_id == display_id:
+                    # 公众号改变，重新获取账户信息
+                    account_info = get_account_info(display_id)
+                else:
+                    account_info = dict(name=rlt.name, logo=rlt.avatar_url, qr_code=rlt.qrcode_url)
+
+                sql = "update school_accounts set app_id='%s', app_secret='%s', token='%s', name='%s', " \
+                      "display_id='%s', avatar_url='%s', qrcode_url='%s', active=%s ," \
+                      "school_name='%s', intro_url='%s', intro_img_url='%s', vote_account_id='%s' where id=%d" \
+                      % (MySQLdb.escape_string(self.get_body_argument('app_id')),
+                         MySQLdb.escape_string(self.get_body_argument('app_secret')),
+                         MySQLdb.escape_string(self.get_body_argument('token')),
+                         MySQLdb.escape_string(account_info['name'].encode('utf8')),
+                         MySQLdb.escape_string(display_id),
+                         MySQLdb.escape_string(account_info['logo']),
+                         MySQLdb.escape_string(account_info['qr_code']),
+                         "false" if self.get_body_argument('active', None) is None else "true",
+                         MySQLdb.escape_string(self.get_body_argument('school_name').encode('utf8')),
+                         MySQLdb.escape_string(self.get_body_argument('intro_url')),
+                         MySQLdb.escape_string(self.get_body_argument('intro_img_url')),
+                         MySQLdb.escape_string(self.get_body_argument('vote_account_id')),
+                         _id)
+
+                try:
+                    db.update(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
 
         elif table == 'classes':
-            rlt = db.get("select * from classes where id='%d'" % _id)
+            sid = int(self.get_argument("sid", 0))
+            school_account = db.get("select * from school_accounts where id=%d" % sid)
+            if school_account is None:
+                self.redirect('/%s' % table, permanent=True)
+                return
 
-        self.redirect('/%s' % table, permanent=True)
+            rlt = db.get("select * from classes where id=%d" % _id)
+
+            if rlt is None:
+                # 添加
+                sql = "insert into classes(class_name, voting_count, school_account_id) values('%s', %d, '%s')" \
+                      % (MySQLdb.escape_string(self.get_body_argument('class_name').encode('utf8')),
+                         0, school_account.app_id.encode('utf8'))
+
+                try:
+                    db.insert(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
+
+            else:
+                # 编辑
+                sql = "update classes set class_name='%s' where id=%d" % (
+                    MySQLdb.escape_string(self.get_body_argument('class_name').encode('utf8')),
+                    _id)
+
+                try:
+                    db.update(sql)
+                    self.redirect('/%s' % table, permanent=True)
+                except Exception, e:
+                    print Exception, ":", e
+                    self.write(u'操作失败，请确认你填写的数据无误')
 
 
 if __name__ == '__main__':

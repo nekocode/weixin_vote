@@ -19,7 +19,7 @@
   <div class="container-fluid"> 
    <div class="row-fluid"> 
     
-    {% module SideBar(select=0) %}
+    {% module SideBar(select=sidebar_select) %}
     
     <div class="span9"> 
      <div class="row-fluid"> 
@@ -32,7 +32,7 @@
 		
 		{% for row in rows %}
 		<div class="control-group">
-			<label class="control-label" for="{{ row['id'] }}">{{ row['name'] }}</label>
+			<label class="control-label">{{ row['name'] }}</label>
 			<div class="controls">
 				{% raw row['str'] %}
 			</div>
