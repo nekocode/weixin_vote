@@ -4,7 +4,8 @@ import os
 import sys
 import tornado
 from tornado.web import Application, RequestHandler
-from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db
+import admin
+from vote_model import SchoolAccount, VoteAccount, school_accounts, vote_accounts, init_db, cahe_accounts
 from weixin_helper import xml2dict, WeixinRefreshATKWorker
 import config
 
@@ -210,9 +211,12 @@ class RankHandler(RequestHandler):
                     vote_total_count=vote_total_count)
 
 
+import uimodules
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "cookie_secret": "61oETzKXQAGaYdk12345GeJJFuYh7EQnp2XdTP1o/Vo=",
+    "login_url": "/login",
+    "ui_modules": uimodules,
 }
 
 application = Application([
@@ -221,19 +225,26 @@ application = Application([
     (r'/vote_code/(.*)', VoteCodeHandler),
     (r'/qrcode/(.*)', QRCodeHandler),
     (r'/invite_code/(.*)', InviteCodeHandler),
-    (r'/rank/(.*)', RankHandler)
+    (r'/rank/(.*)', RankHandler),
+
+    (r'/', tornado.web.RedirectHandler, {"url": "/login", "permanent": False}),
+    (r"/login", admin.LoginHandler),
+    (r"/logout", admin.LogoutHandler),
+    (r"/reload_cache", admin.ReloadCacheHandler),
+
+    (r"/vote_accounts", admin.VoteAccountsHandler),
+    (r"/sub_accounts", admin.SubAccountsHandler),
+    (r"/classes", admin.ClassesHandler),
+    (r"/people", admin.PeopleHandler),
+
+    (r"/(.*)/edit", admin.EditHandler, dict(title_prefix=u'编辑')),
+    (r"/(.*)/add", admin.EditHandler, dict(title_prefix=u'添加')),
 ], **settings)
 
 
 def server():
-    init_db()
-
-    # 刷新 access token
-    for key, school_weixin in school_accounts.items():
-        WeixinRefreshATKWorker(school_weixin).start()
-
-    for key, vote_weixin in vote_accounts.items():
-        WeixinRefreshATKWorker(vote_weixin).start()
+    init_db()           # 初始化数据库
+    cahe_accounts()     # 缓存账户数据到内存
 
     application.listen(80)
     tornado.ioloop.IOLoop.instance().start()

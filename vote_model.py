@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import config
-from weixin_helper import WeixinHelper
+from weixin_helper import WeixinHelper, WeixinRefreshATKWorker
 import torndb
 
 __author__ = 'nekocode'
@@ -140,35 +140,6 @@ vote_accounts = dict()
 db = None
 
 
-def init_db():
-    global db
-    db = torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
-
-    load_accounts()
-
-
-def load_accounts():
-    global db
-
-    rlt = db.query("select * from vote_accounts")
-    for account in rlt:
-        vote_accounts[account.app_id] = VoteAccount(
-            account.app_id, account.app_secret, account.token,
-            account.name, account.display_id, account.avatar_url, account.qrcode_url,
-            account.aes_key, account.access_token)
-
-    rlt = db.query("select * from school_accounts")
-    for account in rlt:
-        school_account = SchoolAccount(
-            account.app_id, account.app_secret, account.token,
-            account.vote_account_id, account.school_name, account.voting_count,
-            account.name, account.display_id, account.avatar_url, account.qrcode_url,
-            account.intro_url, account.intro_img_url,
-            account.aes_key, account.access_token)
-
-        school_accounts[account.app_id] = school_account
-
-
 def create_tables(db_name):
     if if_table_exist(db_name, 'vote_accounts') == 0:
         db.execute("create table vote_accounts(id INTEGER PRIMARY KEY AUTO_INCREMENT, "
@@ -214,6 +185,43 @@ def if_table_exist(db_name, table_name):
     count = db.get("select count(*) as count from information_schema.tables "
                    "where table_schema ='" + db_name + "' and table_name ='" + table_name + "'")
     return count.count
+
+
+def init_db():
+    global db
+    db = torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
+
+
+def cahe_accounts():
+    global db
+
+    for act in vote_accounts:
+        act.is_deleted = True
+
+    for act in school_accounts:
+        act.is_deleted = True
+
+    rlt = db.query("select * from vote_accounts")
+    for account in rlt:
+        vote_account = VoteAccount(
+            account.app_id, account.app_secret, account.token,
+            account.name, account.display_id, account.avatar_url, account.qrcode_url,
+            account.aes_key, account.access_token)
+
+        vote_accounts[account.app_id] = vote_account
+        WeixinRefreshATKWorker(vote_account).start()
+
+    rlt = db.query("select * from school_accounts")
+    for account in rlt:
+        school_account = SchoolAccount(
+            account.app_id, account.app_secret, account.token,
+            account.vote_account_id, account.school_name, account.voting_count,
+            account.name, account.display_id, account.avatar_url, account.qrcode_url,
+            account.intro_url, account.intro_img_url,
+            account.aes_key, account.access_token)
+
+        school_accounts[account.app_id] = school_account
+        WeixinRefreshATKWorker(school_account).start()
 
 
 if __name__ == '__main__':

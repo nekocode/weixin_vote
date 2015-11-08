@@ -38,6 +38,7 @@ class WeixinHelper:
 
         self.access_token = None
         self.expires_in = 0     # 凭证有效时间，单位：秒
+        self.is_deleted = False
 
         self.http = httplib2.Http(timeout=5)
 
@@ -57,7 +58,7 @@ class WeixinHelper:
         rlt = json.loads(content)
 
         if 'errcode' in rlt:
-            self.deal_err(rlt)
+            print rlt['errmsg']
             return False
         else:
             self.access_token = rlt['access_token']
@@ -135,11 +136,14 @@ class WeixinRefreshATKWorker(threading.Thread):
         self.weixin_helper = weixin_helper
 
     def run(self):
-        while True:
-            while not self.weixin_helper.refresh_access_token():
-                time.sleep(5)
+        try:
+            while not self.weixin_helper.is_deleted:
+                while not self.weixin_helper.is_deleted and not self.weixin_helper.refresh_access_token():
+                    time.sleep(300)
 
-            time.sleep(self.weixin_helper.expires_in - 100)
+                time.sleep(self.weixin_helper.expires_in - 100)
+        except Exception, e:
+            print Exception, ':', e
 
 
 class AccountPropertyNotDefineException(Exception):

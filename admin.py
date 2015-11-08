@@ -5,17 +5,15 @@ import config
 import torndb
 import tornado
 from tornado.web import Application, RequestHandler, os
+import vote_model
 from weixin_sougou import get_account_info
 
-db = None
 PER_PAGE_ROWS = 20
 
 
 def get_page_rows(p, table_name, where=''):
-    global db
-
     # 获取分页数量
-    row_count = db.get("select count(*) from %s %s" % (table_name, where))['count(*)']
+    row_count = vote_model.db.get("select count(*) from %s %s" % (table_name, where))['count(*)']
     page_count = row_count/PER_PAGE_ROWS + 1
     if row_count % PER_PAGE_ROWS == 0:
         page_count -= 1
@@ -34,7 +32,7 @@ def get_page_rows(p, table_name, where=''):
             pages = range(p-2, p+2)
 
     # 获取分页
-    rows = db.query("select * from %s %s "
+    rows = vote_model.db.query("select * from %s %s "
                     "order by id desc limit %d,%d"
                     % (table_name, where, PER_PAGE_ROWS*(p-1), PER_PAGE_ROWS))
 
@@ -67,12 +65,11 @@ class SubAccountsHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
-        global db
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         p, rows, pages = get_page_rows(int(self.get_argument('p', 1)), 'school_accounts', 'where admin_id=%d' % userid)
 
         for row in rows:
-            v_row = db.get("select * from vote_accounts where app_id='%s'" % row.vote_account_id)
+            v_row = vote_model.db.get("select * from vote_accounts where app_id='%s'" % row.vote_account_id)
             row.vote_account_name = '%s (%s)' % (v_row['name'], v_row['display_id'])
         self.render("static/admin/sub-accounts.html", rows=rows, pages=pages, p=p)
 
@@ -83,12 +80,11 @@ class ClassesHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
-        global db
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         sid = int(self.get_argument('sid', 1))
         sapp_id = ""
 
-        schools = db.query("select * from school_accounts where admin_id=%d" % userid)
+        schools = vote_model.db.query("select * from school_accounts where admin_id=%d" % userid)
         finded = False
         for school in schools:
             if not sid == school.id:
@@ -114,12 +110,11 @@ class PeopleHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
-        global db
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         sid = int(self.get_argument('sid', 1))
         sapp_id = ""
 
-        schools = db.query("select * from school_accounts where admin_id=%d" % userid)
+        schools = vote_model.db.query("select * from school_accounts where admin_id=%d" % userid)
         finded = False
         for school in schools:
             if not sid == school.id:
@@ -154,8 +149,7 @@ class LoginHandler(BaseHandler):
         name = self.get_argument("name")
         pwd = self.get_argument("pwd")
 
-        global db
-        rlt = db.get("select * from users where username='%s' and password='%s'" % (name, pwd))
+        rlt = vote_model.db.get("select * from users where username='%s' and password='%s'" % (name, pwd))
 
         if rlt is None:
             self.write(u"登陆失败，请尝试刷新页面重新登陆")
@@ -198,7 +192,6 @@ class EditHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, table):
-        global db
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         _id = int(self.get_argument('id', 0))
 
@@ -211,7 +204,7 @@ class EditHandler(BaseHandler):
 
             rlt = None
             if self.title_prefix == u"编辑":
-                rlt = db.get("select * from vote_accounts where id=%d" % _id)
+                rlt = vote_model.db.get("select * from vote_accounts where id=%d" % _id)
                 if rlt is None:
                     self.redirect('/%s' % table, permanent=True)
                     return
@@ -242,7 +235,7 @@ class EditHandler(BaseHandler):
 
             rlt = None
             if self.title_prefix == u"编辑":
-                rlt = db.get("select * from school_accounts where id=%d" % _id)
+                rlt = vote_model.db.get("select * from school_accounts where id=%d" % _id)
                 if rlt is None:
                     self.redirect('/%s' % table, permanent=True)
                     return
@@ -275,7 +268,7 @@ class EditHandler(BaseHandler):
                              str='<input type="text" class="input-xlarge" name="intro_img_url" value="%s" />'
                                  % (rlt.intro_img_url if rlt is not None else "")))
 
-            vote_accounts = db.query("select * from vote_accounts where admin_id=%d" % userid)
+            vote_accounts = vote_model.db.query("select * from vote_accounts where admin_id=%d" % userid)
             selections = '<select name="vote_account_id">'
             for vote_account in vote_accounts:
                 selections += '<option value="%s">%s(%s)</option>' \
@@ -295,14 +288,14 @@ class EditHandler(BaseHandler):
             title = self.title_prefix + u'班级'
 
             sid = int(self.get_argument("sid", 0))
-            rlt = db.get("select * from school_accounts where id=%d" % sid)
+            rlt = vote_model.db.get("select * from school_accounts where id=%d" % sid)
             if rlt is None:
                 self.redirect('/%s' % table, permanent=True)
                 return
 
             rlt = None
             if self.title_prefix == u"编辑":
-                rlt = db.get("select * from classes where id=%d" % _id)
+                rlt = vote_model.db.get("select * from classes where id=%d" % _id)
                 if rlt is None:
                     self.redirect('/%s' % table, permanent=True)
                     return
@@ -319,21 +312,20 @@ class EditHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, table):
-        global db
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         _id = int(self.get_argument('id', 0))
 
         if table == 'vote_accounts':
             display_id = self.get_body_argument('display_id')
             app_id = MySQLdb.escape_string(self.get_body_argument('app_id'))
-            rlt = db.get("select * from vote_accounts where id=%d" % _id)
+            rlt = vote_model.db.get("select * from vote_accounts where id=%d" % _id)
 
             if rlt is None:
-                exist = db.get("select * from vote_accounts where app_id='%s'" % app_id)
+                exist = vote_model.db.get("select * from vote_accounts where app_id='%s'" % app_id)
                 if exist is not None:
                     self.write(u"该 app_id 已被登记，请使用其他公众号")
                     return
-                exist = db.get("select * from school_accounts where app_id='%s'" % app_id)
+                exist = vote_model.db.get("select * from school_accounts where app_id='%s'" % app_id)
                 if exist is not None:
                     self.write(u"该 app_id 已被登记，请使用其他公众号")
                     return
@@ -358,7 +350,7 @@ class EditHandler(BaseHandler):
                          MySQLdb.escape_string(account_info['qr_code']),
                          "false" if self.get_body_argument('active', None) is None else "true")
                 try:
-                    db.insert(sql)
+                    vote_model.db.insert(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -385,7 +377,7 @@ class EditHandler(BaseHandler):
                          _id)
 
                 try:
-                    db.update(sql)
+                    vote_model.db.update(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -394,16 +386,16 @@ class EditHandler(BaseHandler):
         elif table == 'sub_accounts':
             display_id = self.get_body_argument('display_id')
             app_id = MySQLdb.escape_string(self.get_body_argument('app_id'))
-            rlt = db.get("select * from school_accounts where id=%d" % _id)
+            rlt = vote_model.db.get("select * from school_accounts where id=%d" % _id)
 
             if rlt is None:
                 # 添加
 
-                exist = db.get("select * from vote_accounts where app_id='%s'" % app_id)
+                exist = vote_model.db.get("select * from vote_accounts where app_id='%s'" % app_id)
                 if exist is not None:
                     self.write(u"该 app_id 已被登记，请使用其他公众号")
                     return
-                exist = db.get("select * from school_accounts where app_id='%s'" % app_id)
+                exist = vote_model.db.get("select * from school_accounts where app_id='%s'" % app_id)
                 if exist is not None:
                     self.write(u"该 app_id 已被登记，请使用其他公众号")
                     return
@@ -434,7 +426,7 @@ class EditHandler(BaseHandler):
                          MySQLdb.escape_string(self.get_body_argument('intro_img_url')),
                          MySQLdb.escape_string(self.get_body_argument('vote_account_id')))
                 try:
-                    db.insert(sql)
+                    vote_model.db.insert(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -466,7 +458,7 @@ class EditHandler(BaseHandler):
                          _id)
 
                 try:
-                    db.update(sql)
+                    vote_model.db.update(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -474,12 +466,12 @@ class EditHandler(BaseHandler):
 
         elif table == 'classes':
             sid = int(self.get_argument("sid", 0))
-            school_account = db.get("select * from school_accounts where id=%d" % sid)
+            school_account = vote_model.db.get("select * from school_accounts where id=%d" % sid)
             if school_account is None:
                 self.redirect('/%s' % table, permanent=True)
                 return
 
-            rlt = db.get("select * from classes where id=%d" % _id)
+            rlt = vote_model.db.get("select * from classes where id=%d" % _id)
 
             if rlt is None:
                 # 添加
@@ -488,7 +480,7 @@ class EditHandler(BaseHandler):
                          0, school_account.app_id.encode('utf8'))
 
                 try:
-                    db.insert(sql)
+                    vote_model.db.insert(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -501,7 +493,7 @@ class EditHandler(BaseHandler):
                     _id)
 
                 try:
-                    db.update(sql)
+                    vote_model.db.update(sql)
                     self.redirect('/%s' % table, permanent=True)
                 except Exception, e:
                     print Exception, ":", e
@@ -509,7 +501,7 @@ class EditHandler(BaseHandler):
 
 
 if __name__ == '__main__':
-    db = torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
+    # vote_model.db.= torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
 
     import uimodules
     settings = {

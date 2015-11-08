@@ -21,13 +21,16 @@ DB_PWD = ''
 - MySQL-python
 - pycrypto
 - httplib2
+- bs4
+- requests
 
 ### todo
+- [ ] 把 access_token 存入数据库（考虑去掉 WeixinRefreshATKWorker）
 - [x] 把 active 属性迁移到子账号上
 - [x] 自动获取公众号基本信息
 - [ ] 邀请码、注册码自动定时清理
 - [x] 管理后台
-- [ ] 将 WeixinRefreshATKWorker 分离出来
+- [x] 将 WeixinRefreshATKWorker 分离出来
 
 ### screenshots
 
