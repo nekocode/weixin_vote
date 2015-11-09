@@ -59,6 +59,10 @@ class MainHandler(RequestHandler):
             text = msg['Content'].upper()
 
             if isinstance(account, VoteAccount):
+                if account.active is False:
+                    self.write(account.text_msg(user, our, '本账号已关闭投票'))
+                    return
+
                 if text.startswith('V'):
                     user_info = account.get_user_info(user)
                     if user_info is None:
@@ -105,6 +109,10 @@ class MainHandler(RequestHandler):
                                                             '并在举办你所在学校比赛的子公众号内使用邀请码投票')
 
             elif isinstance(account, SchoolAccount):
+                if account.active is False:
+                    self.write(account.text_msg(user, our, '本账号已关闭投票'))
+                    return
+
                 if text.startswith('V'):
                     reply_msg = account.news_msg(user, our, [{
                         'title': '为防止刷票，请到该公众号下投票',

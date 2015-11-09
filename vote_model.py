@@ -9,13 +9,14 @@ __author__ = 'nekocode'
 
 class VoteAccount(WeixinHelper):
     def __init__(self, app_id, app_secret, token, name, display_id, avatar_url, qrcode_url,
-                 aes_key=None, access_token=None):
+                 aes_key=None, access_token=None, active=True):
         WeixinHelper.__init__(self, app_id, app_secret, token, aes_key, access_token)
 
         self.name = name
         self.display_id = display_id
         self.avatar_url = avatar_url
         self.qrcode_url = qrcode_url
+        self.active = active
 
     def vote(self, vote_code, open_id, user_info):
         row = db.get("select * from vote_codes where id=%d" % vote_code)
@@ -65,7 +66,7 @@ class VoteAccount(WeixinHelper):
 class SchoolAccount(WeixinHelper):
     def __init__(self, app_id, app_secret, token, vote_account_id, school_name, voting_count,
                  name, display_id, avatar_url, qrcode_url, intro_url, intro_img_url,
-                 aes_key=None, access_token=None):
+                 aes_key=None, access_token=None, active=True):
         WeixinHelper.__init__(self, app_id, app_secret, token, aes_key, access_token)
 
         self.vote_account_id = vote_account_id
@@ -77,6 +78,7 @@ class SchoolAccount(WeixinHelper):
         self.qrcode_url = qrcode_url
         self.intro_url = intro_url
         self.intro_img_url = intro_img_url
+        self.active = active
 
     @staticmethod
     def get_vote_code(code_with_prefix):
@@ -206,7 +208,7 @@ def cahe_accounts():
         vote_account = VoteAccount(
             account.app_id, account.app_secret, account.token,
             account.name, account.display_id, account.avatar_url, account.qrcode_url,
-            account.aes_key, account.access_token)
+            account.aes_key, account.access_token, account.active == 1)
 
         vote_accounts[account.app_id] = vote_account
         WeixinRefreshATKWorker(vote_account).start()
@@ -218,7 +220,7 @@ def cahe_accounts():
             account.vote_account_id, account.school_name, account.voting_count,
             account.name, account.display_id, account.avatar_url, account.qrcode_url,
             account.intro_url, account.intro_img_url,
-            account.aes_key, account.access_token)
+            account.aes_key, account.access_token, account.active == 1)
 
         school_accounts[account.app_id] = school_account
         WeixinRefreshATKWorker(school_account).start()
