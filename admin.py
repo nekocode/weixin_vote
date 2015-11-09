@@ -32,9 +32,8 @@ def get_page_rows(p, table_name, where=''):
             pages = range(p-2, p+2)
 
     # 获取分页
-    rows = vote_model.db.query("select * from %s %s "
-                    "order by id desc limit %d,%d"
-                    % (table_name, where, PER_PAGE_ROWS*(p-1), PER_PAGE_ROWS))
+    rows = vote_model.db.query("select * from %s %s order by id desc limit %d,%d"
+                               % (table_name, where, PER_PAGE_ROWS*(p-1), PER_PAGE_ROWS))
 
     return p, rows, pages
 
@@ -525,6 +524,34 @@ class BackendUrlHandler(BaseHandler):
             self.write('不存在该 id')
 
 
+class DeleteAccountHandler(BaseHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self, account_type):
+        userid = int(tornado.escape.xhtml_escape(self.current_user))
+        _id = int(self.get_argument('id', 0))
+
+        if account_type == 'vote_accounts':
+            user = vote_model.db.get("select * from users where id=%d" % userid)
+            if user is None or user.access_vote == 0:
+                self.write(u"你没有权限进行该操作")
+                return
+
+            rlt = vote_model.db.delete('delete from vote_accounts where id=%d' % _id)
+            self.redirect('/%s' % account_type, permanent=True)
+
+        elif account_type == 'sub_accounts':
+            rlt = vote_model.db.delete('delete from school_accounts where id=%d' % _id)
+            self.redirect('/%s' % account_type, permanent=True)
+
+        elif account_type == 'classes':
+            rlt = vote_model.db.delete('delete from classes where id=%d' % _id)
+            self.redirect('/%s' % account_type, permanent=True)
+
+        else:
+            self.write('路径错误')
+
 if __name__ == '__main__':
     import uimodules
     settings = {
@@ -548,6 +575,7 @@ if __name__ == '__main__':
         (r"/(.*)/backend_url", BackendUrlHandler),
         (r"/(.*)/edit", EditHandler, dict(title_prefix=u'编辑')),
         (r"/(.*)/add", EditHandler, dict(title_prefix=u'添加')),
+        (r"/(.*)/delete", DeleteAccountHandler),
     ], **settings)
 
     application.listen(80)
