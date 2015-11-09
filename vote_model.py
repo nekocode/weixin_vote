@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import MySQLdb
 import config
 from weixin_helper import WeixinHelper, WeixinRefreshATKWorker
 import torndb
@@ -46,7 +47,9 @@ class VoteAccount(WeixinHelper):
         row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
                            "class_id, class_name, school_account_id) "
                            "values('%s','%s', '%s', %d, %d, '%s', '%s')" %
-                           (open_id, user_info['nickname'], user_info['headimgurl'], 0,
+                           (open_id,
+                            MySQLdb.escape_string(user_info['nickname'].encode('utf8')),
+                            MySQLdb.escape_string(user_info['headimgurl'].encode('utf8')), 0,
                             class_row.id, class_row.class_name, school_account_id))
 
         # 是邀请而来的话，邀请人邀请数 +1
