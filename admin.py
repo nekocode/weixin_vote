@@ -177,9 +177,10 @@ class ReloadCacheHandler(BaseHandler):
         refresh = int(self.get_argument('refresh', 0))
 
         if refresh == 1:
-            pass    # TODO
-
-        self.render("static/admin/reload-cache.html")
+            vote_model.cahe_accounts()
+            self.write("部署成功")
+        else:
+            self.render("static/admin/reload-cache.html")
 
 
 class EditHandler(BaseHandler):
@@ -281,7 +282,7 @@ class EditHandler(BaseHandler):
 
             rows.append(dict(name='接受投票',
                              str='<input type="checkbox" name="active" value=1 %s />'
-                                 % ("checked" if rlt is not None and rlt.active == 1 else "")))
+                                 % ("checked" if rlt is None or rlt.active == 1 else "")))
 
         elif table == 'classes':
             sidebar_select = 2
@@ -316,6 +317,11 @@ class EditHandler(BaseHandler):
         _id = int(self.get_argument('id', 0))
 
         if table == 'vote_accounts':
+            user = vote_model.db.get("select * from users where id=%d" % userid)
+            if user is None or user.access_vote == 0:
+                self.write(u"你没有权限进行该操作")
+                return
+
             display_id = self.get_body_argument('display_id')
             app_id = MySQLdb.escape_string(self.get_body_argument('app_id'))
             rlt = vote_model.db.get("select * from vote_accounts where id=%d" % _id)
@@ -500,9 +506,26 @@ class EditHandler(BaseHandler):
                     self.write(u'操作失败，请确认你填写的数据无误')
 
 
-if __name__ == '__main__':
-    # vote_model.db.= torndb.Connection(config.DB_HOST, config.DB_NAME, config.DB_USER, config.DB_PWD)
+class BackendUrlHandler(BaseHandler):
+    def data_received(self, chunk):
+        pass
 
+    def get(self, account_type):
+        _id = int(self.get_argument('id', 0))
+
+        if account_type == 'vote_accounts':
+            rlt = vote_model.db.get('select * from vote_accounts where id=%d' % _id)
+            self.write('您的公众号后台配置地址为： ' + config.DOMAIN + '/vote_account/' + rlt.app_id)
+
+        elif account_type == 'sub_accounts':
+            rlt = vote_model.db.get('select * from school_accounts where id=%d' % _id)
+            self.write('您的公众号后台配置地址为： ' + config.DOMAIN + '/sub_account/' + rlt.app_id)
+
+        else:
+            self.write('不存在该 id')
+
+
+if __name__ == '__main__':
     import uimodules
     settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
@@ -522,6 +545,7 @@ if __name__ == '__main__':
         (r"/classes", ClassesHandler),
         (r"/people", PeopleHandler),
 
+        (r"/(.*)/backend_url", BackendUrlHandler),
         (r"/(.*)/edit", EditHandler, dict(title_prefix=u'编辑')),
         (r"/(.*)/add", EditHandler, dict(title_prefix=u'添加')),
     ], **settings)

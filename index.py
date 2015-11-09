@@ -61,6 +61,9 @@ class MainHandler(RequestHandler):
             if isinstance(account, VoteAccount):
                 if text.startswith('V'):
                     user_info = account.get_user_info(user)
+                    if user_info is None:
+                        self.write(account.text_msg(user, our, 'AccseeToken 失效.'))
+                        return
 
                     try:
                         vote_code = int(text[1:])
@@ -237,6 +240,7 @@ application = Application([
     (r"/classes", admin.ClassesHandler),
     (r"/people", admin.PeopleHandler),
 
+    (r"/(.*)/backend_url", admin.BackendUrlHandler),
     (r"/(.*)/edit", admin.EditHandler, dict(title_prefix=u'编辑')),
     (r"/(.*)/add", admin.EditHandler, dict(title_prefix=u'添加')),
 ], **settings)

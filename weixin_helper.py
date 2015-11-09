@@ -146,6 +146,6 @@ class WeixinRefreshATKWorker(threading.Thread):
             print Exception, ':', e
 
 
-class AccountPropertyNotDefineException(Exception):
+class AccessTokenErrException(Exception):
     pass
 

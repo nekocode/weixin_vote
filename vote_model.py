@@ -195,10 +195,10 @@ def init_db():
 def cahe_accounts():
     global db
 
-    for act in vote_accounts:
+    for key, act in vote_accounts.items():
         act.is_deleted = True
 
-    for act in school_accounts:
+    for key, act in school_accounts.items():
         act.is_deleted = True
 
     rlt = db.query("select * from vote_accounts")
