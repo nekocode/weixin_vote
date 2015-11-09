@@ -251,6 +251,7 @@ application = Application([
     (r"/(.*)/backend_url", admin.BackendUrlHandler),
     (r"/(.*)/edit", admin.EditHandler, dict(title_prefix=u'编辑')),
     (r"/(.*)/add", admin.EditHandler, dict(title_prefix=u'添加')),
+    (r"/(.*)/delete", admin.DeleteAccountHandler),
 ], **settings)
 
 
