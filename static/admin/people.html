@@ -50,7 +50,7 @@
 
 {% for row in rows %}
 <tr class="list-users">
-  <td><strong><a href="{{ %row.avatar_url }}"><img src="{{ %row.avatar_url }}" height="32" width="32"></a>{{ row.nickname }}</strong> ({{ row.open_id }})</td>
+  <td><strong><a href="{{ row.avatar_url }}"><img src="{{ row.avatar_url }}" height="32" width="32"></a>{{ row.nickname }}</strong> ({{ row.open_id }})</td>
   <td>{{ row.class_name }}</td>
   <td>{{ row.inviting_count }}</td>
 </tr>
