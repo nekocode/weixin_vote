@@ -50,7 +50,9 @@ class VoteAccount(WeixinHelper):
                            (open_id,
                             MySQLdb.escape_string(user_info['nickname'].encode('utf8')),
                             MySQLdb.escape_string(user_info['headimgurl'].encode('utf8')), 0,
-                            class_row.id, class_row.class_name, school_account_id))
+                            class_row.id,
+                            MySQLdb.escape_string(class_row.class_name.encode('utf8')),
+                            school_account_id))
 
         # 是邀请而来的话，邀请人邀请数 +1
         if row.invite_id is not None:
