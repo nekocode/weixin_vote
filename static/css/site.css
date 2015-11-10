@@ -82,7 +82,7 @@ a:hover {
 }
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover {
-  background-color: ##51A351;
+  background-color: #51A351;
 }
 .dropdown-menu .nav-header {
   display: block;
@@ -102,6 +102,10 @@ table {
 }
 tr.pending-user:hover span.user-actions, tr.list-users:hover td div.btn-group, tr.list-roles:hover td div.btn-group {
   visibility:visible;
+}
+
+tr.list-users td {
+  vertical-align: middle;
 }
 
 /*
