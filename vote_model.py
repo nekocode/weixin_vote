@@ -169,7 +169,7 @@ def create_tables(db_name):
     if if_table_exist(db_name, 'classes') == 0:
         # 使用 id 做班级码
         db.execute("create table classes(id INTEGER PRIMARY KEY AUTO_INCREMENT, class_name VARCHAR(60), "
-                   "voting_count INTEGER, school_account_id VARCHAR(20) NOT NULL)")
+                   "voting_count INTEGER, pic_url VARCHAR(512), school_account_id VARCHAR(20) NOT NULL)")
 
     if if_table_exist(db_name, 'voted_people') == 0:
         # 使用 id 做邀请码

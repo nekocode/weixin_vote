@@ -36,7 +36,7 @@
 			{% for _class in class_rank_rows %}
 			<div class="col">
 				<div class="gallery-item">
-					<img src="images/gallery/gallery-item1.jpg" />
+					<img src="{{ _class.pic_url if _class.pic_url is not None else static_url("img/no_pic.jpeg") }}" />
 					<div class="content-gallery">
 						<h3>{{ _class.class_name }}</h3></br>
 						<h4>投票码：<strong>{{ "C%05d" % _class.id }}</strong></h4></br>
