@@ -104,7 +104,7 @@ body {
 
 .container {
   padding-top: 6px; 
-  padding-bottom: 30px;
+  padding-bottom: 50px;
 }
 
 #tab1 {
@@ -136,7 +136,6 @@ body {
 
 .gallery-item img {
     width: 100%;
-    max-height: 200px;
 }
 
 .gallery-item .content-gallery h3 {
@@ -169,8 +168,9 @@ body {
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     
-    float: left;
-    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+    width: 49%;
 }
 
 .ol-person {
