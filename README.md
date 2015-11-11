@@ -32,6 +32,8 @@ DB_PWD = ''
 - [x] 管理后台
 - [x] 将 WeixinRefreshATKWorker 分离出来
 
+- [ ] css 精简(font-awesome.css)
+
 ### screenshots
 
 ![](art/1.png "")
