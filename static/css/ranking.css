@@ -136,6 +136,7 @@ body {
 
 .gallery-item img {
     width: 100%;
+    max-height: 200px;
 }
 
 .gallery-item .content-gallery h3 {
