@@ -54,7 +54,10 @@
 {% for row in rows %}
 <tr class="list-users">
   <td><strong>{{ row.class_name }}</strong> ({{ "C%05d" % row.id }})</td>
-  <td><a href="{{ row.pic_url }}"><img src="{{ row.pic_url }}" height="60" width="100"></a></td>
+  <td><a href="{{ row.pic_url if row.pic_url is not None and len(row.pic_url) > 0 else static_url("img/no_pic.jpeg") }}">
+    <img src="{{ row.pic_url if row.pic_url is not None and len(row.pic_url) > 0 else static_url("img/no_pic.jpeg") }}" height="60" width="100">
+    </a>
+  </td>
   <td>{{ row.voting_count }}</td>
   
   <td WIDTH=100>
