@@ -1,47 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0, minal-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  <title>{{ school_name }}排行榜</title>
-  <link rel="stylesheet" href="{{ static_url("assets/ranking.css") }}">
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>{{ school_name }}排行榜</title>
+	<link href="{{ static_url("css/ranking.css") }}" rel="stylesheet" />
+	<link href="{{ static_url("css/font-awesome.min.css") }}" rel="stylesheet" />
 </head>
+
 <body>
-  <div class="school-info">
-    <img src="{{ avatar_url }}" alt="avatar" class="avatar">
-    <div>
-      <a class="name" href="{{ qrcode_url }}">{{ school_name }}</a>
-      <div class="class-count">班级数：<span>{{ class_count }}</span></div>
-      <div class="votes">投票数：<span>{{ vote_total_count }}</span></div>
-    </div>
-  </div>
-  <ul class="nav-tab">
-    <li data-target="ranking1">总排行榜</li>
-    <li data-target="ranking2">个人排行榜</li>
-  </ul>
-  <div class="tab-content">
-    <div class="wrapper">
-      <div class="ranking1">
-        <ol>
-          {% for _class in class_rank_rows %}
-          <li>{{ _class.class_name }} <span>{{ _class.voting_count }} 票</span></li>
-          {% end %}
-        </ol>
-      </div>
-      <div class="ranking2">
-        <ol>
-          {% for person in person_rank_rows %}
-          <li>
-            <div class="name">{{ person.nickname }}<span class>({{ person.class_name }})</span></div>
-            <div class="invitation-code">邀请码：I{{ person.id }}</div>
-            <div class="votes">邀请票数：<span>{{ person.inviting_count }}</span></div>
-          </li>
-          {% end %}
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script src="{{ static_url("assets/zepto.min.js") }}"></script>
-  <script src="{{ static_url("assets/ranking.js") }}"></script>
+	<div class="header">
+		<div class="top">
+			<img src="{{ avatar_url }}">
+			<div>
+				<p><strong>{{ school_name }}</strong></p>
+				<div>参赛数：{{ class_count }}</div>
+				<div>总票数：{{ vote_total_count }}</div>
+			</div>
+		</div>
+		<ul class="nav-bar">
+			<li>
+				<a id="nav1" class="nav-btn nav-btn-active" href="#" data-ajax="false"><i class="fa fa-home fa-fw"></i> 总排行榜</a>
+			</li>
+			<li>
+				<a id="nav2" class="nav-btn" href="#" data-ajax="false"><i class="fa fa-list fa-fw"></i> 个人排行榜</a>
+			</li>
+		</ul>
+	</div>
+
+	<div class="container">
+
+		<div id="tab1">
+			{% for _class in class_rank_rows %}
+			<div class="col">
+				<div class="gallery-item">
+					<img src="images/gallery/gallery-item1.jpg" />
+					<div class="content-gallery">
+						<h3>{{ _class.class_name }}</h3></br>
+						<h4>投票码：<strong>{{ "C%05d" % _class.id }}</strong></h4></br>
+						<h4>当前票数：<strong>{{ _class.voting_count }}</strong></h4>
+					</div>
+				</div>
+			</div>
+			{% end %}
+		</div>
+		<!-- /.tab1 -->
+
+		<div id="tab2">
+			<ol class="ol-person">
+				{% for person in person_rank_rows %}
+				<li class="person-item">
+					<img src="{{ person.avatar_url }}" />
+					<div class="person-content">
+						<div class="name">{{ person.nickname }}({{ person.class_name }})</div>
+						<div class="invitation-code">邀请码：{{ "I%05d" % person.id }}</div>
+						<div class="votes">邀请票数：<span>{{ person.inviting_count }}</span></div>
+					</div>
+				</li>
+				{% end %}
+			</ol>
+
+		</div>
+
+
+
+		<div class="side ">
+			<a href="# " class="top " onclick="$.mobile.silentScroll(0) "><img src="{{ static_url("assets/null.gif") }}" alt="返回顶部 " width="48
+			" height="48 " border="0 " /></a>
+		</div>
+	</div>
+
+	<script src="{{ static_url("js/jquery.js") }}"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+        $("#nav1").click(function () {
+			$(this).attr("class", "nav-btn nav-btn-active");
+			$("#nav2").attr("class", "nav-btn");
+            $("#tab2").hide();
+			$("#tab1").show();
+        });
+		
+		$("#nav2").click(function () {
+			$(this).attr("class", "nav-btn nav-btn-active");
+			$("#nav1").attr("class", "nav-btn");
+            $("#tab1").hide();
+			$("#tab2").show();
+        });
+    });
+
+	</script>
+
 </body>
+
 </html>
