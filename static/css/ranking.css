@@ -1,0 +1,261 @@
+body { 
+  font-size: 100%;
+  font: inherit;
+  margin: 0;
+  vertical-align: baseline;
+  background: #eee;
+}
+
+.header {
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
+.top {
+  background: #eee;
+  overflow: hidden;
+  color: #666;
+  position: relative;
+  text-align: center;
+  padding: 10px;
+}
+
+.top img {
+  width: 74px;
+  height: 74px;
+  line-height: normal;
+  vertical-align: middle;
+  margin-left: 10px;
+  border-radius:4px; 
+}
+
+.top > div {
+  line-height: normal;
+  height: 56px;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+  margin-left: 10px;
+  display: inline-block;
+  text-align: left;
+}
+
+.top > div > div {
+  margin: 0;
+  margin-bottom: 4px;
+  line-height: 12px;
+  font-size: 12px;
+  color: #888;
+}
+
+.top > div p {
+  margin: 0;
+  margin-bottom: 6px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 16px;
+  color: #444;
+}
+
+.nav-bar {
+  background: #fff;
+  height: 40px;
+  line-height: 40px;
+  overflow: hidden;
+  color: #FFF;
+  position: relative;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-bar li {
+  display: block;
+  float: left;
+  width: 50%;
+  
+  border:0;
+  box-sizing: border-box;
+}
+
+.nav-btn {
+    line-height: 38px;
+    background-color: #fff;
+    color: #666;
+    font-size: 14px;
+    font-weight: bold;
+    
+    border: 1px #ccc solid;
+    /*border-top-width: 0px;*/
+	  border-collapse: collapse;
+    
+    text-decoration: none;
+    text-align: center;
+    display: block;
+}
+
+.nav-btn-active {
+    background-color: #006D94;
+    color: #fff;
+    
+    border-color: #006D94;
+}
+
+.container {
+  padding-top: 6px; 
+}
+
+#tab1 {
+  display: block;
+  padding-left: 2px;
+  padding-right: 2px
+}
+
+#tab2 {
+  display: none;
+  padding-left: 2px;
+  padding-right: 2px
+}
+
+.gallery-item {
+  background-color: white;
+  padding: 4px;
+  -webkit-box-shadow: inset 0 0 1px #666;
+  -moz-box-shadow: inset 0 0 1px #666;
+  box-shadow: inset 0 0 1px #666;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-item .content-gallery {
+    text-align: center;
+}
+
+.gallery-item img {
+    width: 100%;
+}
+
+.gallery-item .content-gallery h3 {
+    color: #444;
+    font-size: 15px;
+    font-weight: 300;
+    margin: 0;
+    padding: 3px;
+    display: inline-block;
+}
+
+.gallery-item .content-gallery h4 {
+    color: #888;
+    font-size: 12px;
+    font-weight: 300;
+    margin: 0;
+    padding: 3px;
+    display: inline-block;
+}
+
+.gallery-item .content-gallery h4 strong {
+    color: #b10021;
+}
+
+.col {
+    position: relative;
+    min-height: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    
+    float: left;
+    width: 50%;
+}
+
+.ol-person {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.person-item {
+    background-color: white;
+    padding: 2px;
+    margin: 4px;
+    margin-bottom: 10px;
+    -webkit-box-shadow: inset 0 0 1px #666;
+    -moz-box-shadow: inset 0 0 1px #666;
+    box-shadow: inset 0 0 1px #666;
+    position: relative;
+    overflow: hidden;
+}
+
+.person-item > img {
+  line-height: normal;
+  vertical-align: middle;
+    width: 60px;
+    height: 60px;
+}
+
+.person-content {
+  line-height: normal;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 6px;
+}
+
+.person-content > .name {
+  max-width: 80px;
+  white-space: nowrap;
+  
+    color: #222;
+    font-size: 15px;
+    font-weight: 300;
+    margin: 0;
+    margin-bottom: 4px;
+}
+
+.person-content > .invitation-code {
+  max-width: 80px;
+  white-space: nowrap;
+  
+    color: #888;
+    font-size: 12px;
+    font-weight: 300;
+    margin: 0;
+}
+
+.person-content > .votes {
+  max-width: 80px;
+  white-space: nowrap;
+  
+    color: #888;
+    font-size: 12px;
+    font-weight: 300;
+    margin: 0;
+}
+
+.side {
+    position: fixed;
+    right: 16px;
+    bottom: 10px;
+    z-index: 9999;
+}
+
+.side a.top {
+    background-position: 11px -26px;
+}
+
+.side a {
+    display: block;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    -ms-border-radius: 25px;
+    -o-border-radius: 25px;
+    border-radius: 25px;
+    width: 25px;
+    height: 25px;
+    margin-bottom: 6px;
+    background: url('../assets/icon.png') no-repeat #ff8900;
+    background-size: 50% auto;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
