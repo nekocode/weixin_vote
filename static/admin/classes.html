@@ -44,6 +44,7 @@
        <thead> 
         <tr> 
          <th>班级</th> 
+         <th>图片</th> 
          <th>投票数</th> 
          <th></th> 
         </tr> 
@@ -53,7 +54,9 @@
 {% for row in rows %}
 <tr class="list-users">
   <td><strong>{{ row.class_name }}</strong> ({{ "C%05d" % row.id }})</td>
+  <td><a href="{{ row.pic_url }}" target="_blank" class="btn btn-mini">查看</a></td>
   <td>{{ row.voting_count }}</td>
+  
   <td WIDTH=100>
     <div class="btn-group">
       <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">操作 <span class="caret"></span></a>
