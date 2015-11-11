@@ -304,6 +304,10 @@ class EditHandler(BaseHandler):
                              str='<input type="text" class="input-xlarge" name="class_name" value="%s" />'
                                  % (rlt.class_name if rlt is not None else "")))
 
+            rows.append(dict(name='班级图片 URL',
+                             str='<input type="text" class="input-xlarge" name="pic_url" value="%s" />'
+                                 % (rlt.pic_url if rlt is not None else "")))
+
         else:
             self.write("404: Page not found.")
             return
@@ -480,13 +484,17 @@ class EditHandler(BaseHandler):
 
             if rlt is None:
                 # 添加
-                sql = "insert into classes(class_name, voting_count, school_account_id) values('%s', %d, '%s')" \
+                sql = "insert into classes(class_name, voting_count, pic_url, school_account_id) " \
+                      "values('%s', %d, '%s', '%s')" \
                       % (MySQLdb.escape_string(self.get_body_argument('class_name').encode('utf8')),
-                         0, school_account.app_id.encode('utf8'))
+                         0,
+                         MySQLdb.escape_string(self.get_body_argument('pic_url')),
+                         school_account.app_id.encode('utf8'))
 
                 try:
                     vote_model.db.insert(sql)
                     self.redirect('/%s' % table, permanent=True)
+
                 except Exception, e:
                     print Exception, ":", e
                     self.write(u'操作失败，请确认你填写的数据无误')
