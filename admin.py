@@ -286,9 +286,9 @@ class EditHandler(BaseHandler):
 
             user = vote_model.db.get("select * from users where id=%d" % userid)
             if user is None or user.access_vote == 0:
-                vote_accounts = vote_model.db.query("select * from vote_accounts where admin_id=%d" % userid)
-            else:
                 vote_accounts = vote_model.db.query("select * from vote_accounts")
+            else:
+                vote_accounts = vote_model.db.query("select * from vote_accounts where admin_id=%d" % userid)
 
             selections = '<select name="vote_account_id">'
             for vote_account in vote_accounts:
