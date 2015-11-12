@@ -210,6 +210,11 @@ class EditHandler(BaseHandler):
         title = ""
         rows = []
         if table == 'vote_accounts':
+            user = vote_model.db.get("select * from users where id=%d" % userid)
+            if user is None or user.access_vote == 0:
+                self.write(u"你没有权限进行该操作")
+                return
+            
             sidebar_select = 0
             title = self.title_prefix + u'投票账号'
 
