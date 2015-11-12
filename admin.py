@@ -54,7 +54,13 @@ class VoteAccountsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
         userid = int(tornado.escape.xhtml_escape(self.current_user))
-        p, rows, pages = get_page_rows(int(self.get_argument('p', 1)), 'vote_accounts', 'where admin_id=%d' % userid)
+
+        user = vote_model.db.get("select * from users where id=%d" % userid)
+        if user is None or user.access_vote == 0:
+            p, rows, pages = get_page_rows(int(self.get_argument('p', 1)), 'vote_accounts', '')
+        else:
+            p, rows, pages = get_page_rows(int(self.get_argument('p', 1)), 'vote_accounts',
+                                           'where admin_id=%d' % userid)
 
         self.render("static/admin/vote-accounts.html", rows=rows, pages=pages, p=p)
 
