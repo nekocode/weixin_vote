@@ -568,7 +568,6 @@ class UploadHandler(tornado.web.RequestHandler):
     def data_received(self, chunk):
         pass
 
-    @tornado.web.authenticated
     def get(self, *args, **kwargs):
         html = """
 <p><h1>选择文件并上传</h1></p>
@@ -581,7 +580,6 @@ class UploadHandler(tornado.web.RequestHandler):
 """
         self.write(html)
 
-    @tornado.web.authenticated
     def post(self):
         __UPLOADS__ = 'static/upload/'
         fileinfo = self.request.files['filearg'][0]
@@ -589,12 +587,14 @@ class UploadHandler(tornado.web.RequestHandler):
         fname = fileinfo['filename']
         extn = os.path.splitext(fname)[1]
         cname = str(uuid.uuid4()) + extn
-        fh = open(__UPLOADS__ + cname, 'w')
+        fh = open(__UPLOADS__ + cname, 'wb')
         fh.write(fileinfo['body'])
         self.finish("图片已上传，图片地址为: %s" % (config.DOMAIN + "/" + __UPLOADS__ + cname))
 
 
 if __name__ == '__main__':
+    vote_model.init_db()
+
     import uimodules
     settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
