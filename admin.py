@@ -81,7 +81,7 @@ class ClassesHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
         userid = int(tornado.escape.xhtml_escape(self.current_user))
-        sid = int(self.get_argument('sid', 1))
+        sid = int(self.get_argument('sid', int(self.get_cookie('sid', 0))))
         sapp_id = ""
 
         schools = vote_model.db.query("select * from school_accounts where admin_id=%d" % userid)
@@ -97,6 +97,8 @@ class ClassesHandler(BaseHandler):
         if finded is False and len(schools) > 0:
             sid = schools[0].id
             sapp_id = schools[0].app_id
+
+        self.set_cookie('sid', str(sid))
 
         p, rows, pages = get_page_rows(int(self.get_argument('p', 1)),
                                        'classes', 'where school_account_id="%s"' % sapp_id)
@@ -111,7 +113,7 @@ class PeopleHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
         userid = int(tornado.escape.xhtml_escape(self.current_user))
-        sid = int(self.get_argument('sid', 1))
+        sid = int(self.get_argument('sid', int(self.get_cookie('sid', 0))))
         sapp_id = ""
 
         schools = vote_model.db.query("select * from school_accounts where admin_id=%d" % userid)
@@ -127,6 +129,8 @@ class PeopleHandler(BaseHandler):
         if finded is False and len(schools) > 0:
             sid = schools[0].id
             sapp_id = schools[0].app_id
+
+        self.set_cookie('sid', str(sid))
 
         p, rows, pages = get_page_rows(int(self.get_argument('p', 1)),
                                        'voted_people', 'where school_account_id="%s"' % sapp_id)
