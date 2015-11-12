@@ -25,15 +25,15 @@ DB_PWD = ''
 - requests
 
 ### todo
-- [ ] °Ñ access_token ´æÈëÊı¾İ¿â£¨¿¼ÂÇÈ¥µô WeixinRefreshATKWorker£©
-- [x] °Ñ active ÊôĞÔÇ¨ÒÆµ½×ÓÕËºÅÉÏ
-- [x] ×Ô¶¯»ñÈ¡¹«ÖÚºÅ»ù±¾ĞÅÏ¢
-- [ ] ÑûÇëÂë¡¢×¢²áÂë×Ô¶¯¶¨Ê±ÇåÀí
-- [x] ¹ÜÀíºóÌ¨
-- [x] ½« WeixinRefreshATKWorker ·ÖÀë³öÀ´
+- [ ] æŠŠ access_token å­˜å…¥æ•°æ®åº“ï¼ˆè€ƒè™‘å»æ‰ WeixinRefreshATKWorkerï¼‰
+- [x] æŠŠ active å±æ€§è¿ç§»åˆ°å­è´¦å·ä¸Š
+- [x] è‡ªåŠ¨è·å–å…¬ä¼—å·åŸºæœ¬ä¿¡æ¯
+- [ ] é‚€è¯·ç ã€æ³¨å†Œç è‡ªåŠ¨å®šæ—¶æ¸…ç†
+- [x] ç®¡ç†åå°
+- [x] å°† WeixinRefreshATKWorker åˆ†ç¦»å‡ºæ¥
 
-- [ ] css ¾«¼ò(font-awesome.css)
-- [ ] ÉÏ´«Ğ£Ñé
+- [ ] css ç²¾ç®€(font-awesome.css)
+- [ ] ä¸Šä¼ æ ¡éªŒ
 
 ### screenshots
 
@@ -42,8 +42,10 @@ DB_PWD = ''
 ![](art/3.png "")
 ![](art/4.png "")
 ![](art/5.png "")
-![](art/6.png "")
-![](art/7.png "")
+
+
+## ranking page
+![](art/ranking.jpg "")
 
 
 ## admin
