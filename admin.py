@@ -214,7 +214,7 @@ class EditHandler(BaseHandler):
             if user is None or user.access_vote == 0:
                 self.write(u"你没有权限进行该操作")
                 return
-            
+
             sidebar_select = 0
             title = self.title_prefix + u'投票账号'
 
@@ -284,7 +284,12 @@ class EditHandler(BaseHandler):
                              str='<input type="text" class="input-xlarge" name="intro_img_url" value="%s" />'
                                  % (rlt.intro_img_url if rlt is not None else "")))
 
-            vote_accounts = vote_model.db.query("select * from vote_accounts where admin_id=%d" % userid)
+            user = vote_model.db.get("select * from users where id=%d" % userid)
+            if user is None or user.access_vote == 0:
+                vote_accounts = vote_model.db.query("select * from vote_accounts where admin_id=%d" % userid)
+            else:
+                vote_accounts = vote_model.db.query("select * from vote_accounts")
+
             selections = '<select name="vote_account_id">'
             for vote_account in vote_accounts:
                 selections += '<option value="%s">%s(%s)</option>' \
