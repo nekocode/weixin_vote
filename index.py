@@ -252,6 +252,7 @@ application = Application([
     (r"/(.*)/edit", admin.EditHandler, dict(title_prefix=u'编辑')),
     (r"/(.*)/add", admin.EditHandler, dict(title_prefix=u'添加')),
     (r"/(.*)/delete", admin.DeleteAccountHandler),
+    (r"/upload", admin.UploadHandler),
 ], **settings)
 
 

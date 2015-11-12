@@ -307,7 +307,7 @@ class EditHandler(BaseHandler):
 
             rows.append(dict(name='班级图片 URL',
                              str='<input type="text" class="input-xlarge" name="pic_url" value="%s" />'
-                                 '<a href="/upload" target="_blank" class="btn btn-mini">上传</a><>'
+                                 '<a href="/upload" target="_blank" class="btn btn-mini">上传</a>'
                                  % (rlt.pic_url if rlt is not None else "")))
 
         else:
