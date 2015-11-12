@@ -579,6 +579,7 @@ class UploadHandler(tornado.web.RequestHandler):
 <input type="submit" value="upload" />
 </form>
 """
+        self.write(html)
 
     @tornado.web.authenticated
     def post(self):
