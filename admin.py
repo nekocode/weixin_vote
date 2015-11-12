@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import uuid
 import MySQLdb
 import config
 import torndb
@@ -306,6 +307,7 @@ class EditHandler(BaseHandler):
 
             rows.append(dict(name='班级图片 URL',
                              str='<input type="text" class="input-xlarge" name="pic_url" value="%s" />'
+                                 '<a href="/upload" target="_blank" class="btn btn-mini">上传</a><>'
                                  % (rlt.pic_url if rlt is not None else "")))
 
         else:
@@ -536,6 +538,7 @@ class DeleteAccountHandler(BaseHandler):
     def data_received(self, chunk):
         pass
 
+    @tornado.web.authenticated
     def get(self, account_type):
         userid = int(tornado.escape.xhtml_escape(self.current_user))
         _id = int(self.get_argument('id', 0))
@@ -559,6 +562,36 @@ class DeleteAccountHandler(BaseHandler):
 
         else:
             self.write('路径错误')
+
+
+class UploadHandler(tornado.web.RequestHandler):
+    def data_received(self, chunk):
+        pass
+
+    @tornado.web.authenticated
+    def get(self, *args, **kwargs):
+        html = """
+<p><h1>选择文件并上传</h1></p>
+<form enctype="multipart/form-data" action="/upload" method="post">
+选择本地图片: <input type="file" name="filearg" />
+<br/>
+<br/>
+<input type="submit" value="upload" />
+</form>
+"""
+
+    @tornado.web.authenticated
+    def post(self):
+        __UPLOADS__ = 'static/upload/'
+        fileinfo = self.request.files['filearg'][0]
+
+        fname = fileinfo['filename']
+        extn = os.path.splitext(fname)[1]
+        cname = str(uuid.uuid4()) + extn
+        fh = open(__UPLOADS__ + cname, 'w')
+        fh.write(fileinfo['body'])
+        self.finish("图片已上传，图片地址为: %s" % (config.DOMAIN + "/" + __UPLOADS__ + cname))
+
 
 if __name__ == '__main__':
     import uimodules
@@ -584,6 +617,7 @@ if __name__ == '__main__':
         (r"/(.*)/edit", EditHandler, dict(title_prefix=u'编辑')),
         (r"/(.*)/add", EditHandler, dict(title_prefix=u'添加')),
         (r"/(.*)/delete", DeleteAccountHandler),
+        (r"/upload", UploadHandler),
     ], **settings)
 
     application.listen(80)

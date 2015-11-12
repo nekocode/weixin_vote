@@ -33,6 +33,7 @@ DB_PWD = ''
 - [x] 将 WeixinRefreshATKWorker 分离出来
 
 - [ ] css 精简(font-awesome.css)
+- [ ] 上传校验
 
 ### screenshots
 
