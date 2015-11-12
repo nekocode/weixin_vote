@@ -503,9 +503,9 @@ class EditHandler(BaseHandler):
 
             else:
                 # 编辑
-                sql = "update classes set class_name='%s' where id=%d" % (
+                sql = "update classes set class_name='%s', pic_url='%s' where id=%d" % (
                     MySQLdb.escape_string(self.get_body_argument('class_name').encode('utf8')),
-                    _id)
+                    _id, MySQLdb.escape_string(self.get_body_argument('pic_url')))
 
                 try:
                     vote_model.db.update(sql)
