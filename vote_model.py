@@ -20,6 +20,8 @@ class VoteAccount(WeixinHelper):
         self.active = active
 
     def vote(self, vote_code, open_id, user_info):
+        if user_info is None:
+            user_info = {'nickname': u'匿名', 'headimgurl': ''}
         row = db.get("select * from vote_codes where id=%d" % vote_code)
 
         if row is None:

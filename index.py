@@ -65,9 +65,9 @@ class MainHandler(RequestHandler):
 
                 if text.startswith('V'):
                     user_info = account.get_user_info(user)
-                    if user_info is None:
-                        self.write(account.text_msg(user, our, 'AccseeToken 失效.'))
-                        return
+                    # if user_info is None:
+                    #     self.write(account.text_msg(user, our, 'AccseeToken 失效.'))
+                    #     return
 
                     try:
                         vote_code = int(text[1:])

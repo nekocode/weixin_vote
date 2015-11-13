@@ -53,7 +53,7 @@
 			<ol class="ol-person">
 				{% for person in person_rank_rows %}
 				<li class="person-item">
-					<img src="{{ person.avatar_url }}" />
+					<img src="{{ person.avatar_url if person.avatar_url is not None and len(person.avatar_url) > 0 else static_url("img/no_pic.jpeg") }}" />
 					<div class="person-content">
 						<div class="name">{{ person.nickname }}({{ person.class_name }})</div>
 						<div class="invitation-code">邀请码：{{ "I%05d" % person.id }}</div>
