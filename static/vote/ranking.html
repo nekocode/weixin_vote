@@ -13,7 +13,6 @@
 <body>
 	<div class="header">
 		<div class="top">
-			<img src="{{ static_url("img/tip.gif") }}">
 			<a href="{{ qrcode_url }}"><img src="{{ avatar_url }}" ></a>
 			<div>
 				<p><strong>{{ school_name }}</strong></p>
@@ -37,7 +36,7 @@
 			{% for _class in class_rank_rows %}
 			<div class="col">
 				<div class="gallery-item">
-					<img src="{{ _class.pic_url if _class.pic_url is not None and len(_class.pic_url) > 0 else static_url("img/no_pic.jpeg") }}" />
+					<img src="{{ _class.pic_url if _class.pic_url is not None and len(_class.pic_url) > 0 else static_url("img/no_pic.png") }}" />
 					<div class="content-gallery">
 						<h3>{{ _class.class_name }}</h3></br>
 						<h4>投票码：<strong>{{ "C%05d" % _class.id }}</strong></h4></br>
@@ -53,7 +52,7 @@
 			<ol class="ol-person">
 				{% for person in person_rank_rows %}
 				<li class="person-item">
-					<img src="{{ person.avatar_url if person.avatar_url is not None and len(person.avatar_url) > 0 else static_url("img/no_pic.jpeg") }}" />
+					<img src="{{ person.avatar_url if person.avatar_url is not None and len(person.avatar_url) > 0 else static_url("img/no_pic.png") }}" />
 					<div class="person-content">
 						<div class="name">{{ person.nickname }}({{ person.class_name }})</div>
 						<div class="invitation-code">邀请码：{{ "I%05d" % person.id }}</div>
