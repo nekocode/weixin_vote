@@ -9,6 +9,17 @@ from tornado.web import Application, RequestHandler, os
 import vote_model
 from weixin_sougou import get_account_info
 
+from qiniu import Auth, set_default, etag, PersistentFop, build_op, op_save, Zone
+from qiniu import put_data, put_file, put_stream
+from qiniu import BucketManager, build_batch_copy, build_batch_rename, build_batch_move, build_batch_stat, build_batch_delete
+from qiniu import urlsafe_base64_encode, urlsafe_base64_decode
+
+from qiniu.compat import is_py2, is_py3, b
+
+from qiniu.services.storage.uploader import _form_put
+
+import qiniu.config
+
 PER_PAGE_ROWS = 20
 
 
@@ -601,15 +612,25 @@ class UploadHandler(tornado.web.RequestHandler):
         self.write(html)
 
     def post(self):
-        __UPLOADS__ = 'static/upload/'
+        # __UPLOADS__ = 'static/upload/'
         fileinfo = self.request.files['filearg'][0]
 
         fname = fileinfo['filename']
+        body = fileinfo['body']
         extn = os.path.splitext(fname)[1]
         cname = str(uuid.uuid4()) + extn
-        fh = open(__UPLOADS__ + cname, 'wb')
-        fh.write(fileinfo['body'])
-        self.finish("图片已上传，图片地址为: %s" % (config.DOMAIN + "/" + __UPLOADS__ + cname))
+        # fh = open(__UPLOADS__ + cname, 'wb')
+        # fh.write(body)
+
+        q = Auth(config.QINIU_AK, config.QINIU_SK)
+        key = 'upload/' + cname
+        token = q.upload_token(config.QINIU_BUCKET_NAME)
+        ret, info = put_data(token, key, body)
+
+        if info.status_code == 200:
+            self.finish("图片已上传，图片地址为: %s" % ("http://7xobq7.com2.z0.glb.qiniucdn.com/" + key))
+        else:
+            self.finish("图片上传失败: %s" % str(ret))
 
 
 if __name__ == '__main__':
