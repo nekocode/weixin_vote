@@ -45,16 +45,30 @@ class VoteAccount(WeixinHelper):
         db.update("update school_accounts set voting_count=voting_count+1 where app_id='%s'" % school_account_id)
         school_accounts[school_account_id].voting_count += 1
 
-        # 添加个人投票记录，并返回 invite_id
-        row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
-                           "class_id, class_name, school_account_id) "
-                           "values('%s','%s', '%s', %d, %d, '%s', '%s')" %
-                           (open_id,
-                            MySQLdb.escape_string(user_info['nickname'].encode('utf8')),
-                            MySQLdb.escape_string(user_info['headimgurl'].encode('utf8')), 0,
-                            class_row.id,
-                            MySQLdb.escape_string(class_row.class_name.encode('utf8')),
-                            school_account_id))
+        try:
+            # 添加个人投票记录，并返回 invite_id
+            row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
+                               "class_id, class_name, school_account_id) "
+                               "values('%s','%s', '%s', %d, %d, '%s', '%s')" %
+                               (open_id,
+                                MySQLdb.escape_string(user_info['nickname'].encode('utf8')),
+                                MySQLdb.escape_string(user_info['headimgurl'].encode('utf8')), 0,
+                                class_row.id,
+                                MySQLdb.escape_string(class_row.class_name.encode('utf8')),
+                                school_account_id))
+
+        except Exception:
+            # 昵称有问题的使用匿名
+            user_info = {'nickname': u'匿名', 'headimgurl': ''}
+            row_id = db.insert("insert into voted_people(open_id, nickname, avatar_url, inviting_count, "
+                               "class_id, class_name, school_account_id) "
+                               "values('%s','%s', '%s', %d, %d, '%s', '%s')" %
+                               (open_id,
+                                MySQLdb.escape_string(user_info['nickname'].encode('utf8')),
+                                MySQLdb.escape_string(user_info['headimgurl'].encode('utf8')), 0,
+                                class_row.id,
+                                MySQLdb.escape_string(class_row.class_name.encode('utf8')),
+                                school_account_id))
 
         # 是邀请而来的话，邀请人邀请数 +1
         if row.invite_id is not None:
