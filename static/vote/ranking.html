@@ -6,8 +6,8 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{{ school_name }}排行榜</title>
-	<link href="{{ static_url("css/ranking.css") }}" rel="stylesheet" />
-	<link href="{{ static_url("css/font-awesome.min.css") }}" rel="stylesheet" />
+	<link href="http://7xobq7.com2.z0.glb.qiniucdn.com/css/ranking.css" rel="stylesheet" />
+	<link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -36,7 +36,7 @@
 			{% for _class in class_rank_rows %}
 			<div class="col">
 				<div class="gallery-item">
-					<img src="{{ _class.pic_url if _class.pic_url is not None and len(_class.pic_url) > 0 else static_url("img/no_pic.png") }}" />
+					<img src="{{ _class.pic_url if _class.pic_url is not None and len(_class.pic_url) > 0 else "http://7xobq7.com2.z0.glb.qiniucdn.com/img/no_pic.png" }}" />
 					<div class="content-gallery">
 						<h3>{{ _class.class_name }}</h3></br>
 						<h4>投票码：<strong>{{ "C%05d" % _class.id }}</strong></h4></br>
@@ -52,7 +52,7 @@
 			<ol class="ol-person">
 				{% for person in person_rank_rows %}
 				<li class="person-item">
-					<img src="{{ person.avatar_url if person.avatar_url is not None and len(person.avatar_url) > 0 else static_url("img/no_pic.png") }}" />
+					<img src="{{ person.avatar_url if person.avatar_url is not None and len(person.avatar_url) > 0 else "http://7xobq7.com2.z0.glb.qiniucdn.com/img/no_pic.png" }}" />
 					<div class="person-content">
 						<div class="name">{{ person.nickname }}({{ person.class_name }})</div>
 						<div class="invitation-code">邀请码：{{ "I%05d" % person.id }}</div>
@@ -72,7 +72,7 @@
 		</div>
 	</div>
 
-	<script src="{{ static_url("js/jquery.js") }}"></script>
+	<script src="http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js"></script>
 
 	<script type="text/javascript">
 		$(document).ready(function () {
