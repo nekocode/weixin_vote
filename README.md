@@ -45,7 +45,8 @@ DB_PWD = ''
 
 
 ## ranking page
-![](art/ranking.jpg "")
+![](art/ranking_1.png "")
+![](art/ranking_2.png "")
 
 
 ## admin
