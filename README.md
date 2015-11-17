@@ -8,6 +8,10 @@ DB_HOST = ''
 DB_NAME = ''
 DB_USER = ''
 DB_PWD = ''
+
+QINIU_AK = ''
+QINIU_SK = ''
+QINIU_BUCKET_NAME = ''
 ```
 - run `index.py`
 
@@ -23,17 +27,19 @@ DB_PWD = ''
 - httplib2
 - bs4
 - requests
+- qiniu
+...
 
 ### todo
+- [x] 迁移静态文件到七牛服务器上
 - [ ] 把 access_token 存入数据库（考虑去掉 WeixinRefreshATKWorker）
 - [x] 把 active 属性迁移到子账号上
 - [x] 自动获取公众号基本信息
 - [ ] 邀请码、注册码自动定时清理
 - [x] 管理后台
 - [x] 将 WeixinRefreshATKWorker 分离出来
-
-- [ ] css 精简(font-awesome.css)
-- [ ] 上传校验
+- [ ] 更好的上传体验
+- [ ] 上传文件校验
 
 ### screenshots
 
