@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import MySQLdb
+
 import config
-from weixin_helper import WeixinHelper, WeixinRefreshATKWorker
-import torndb
+from wx_util.weixin_helper import WeixinHelper, WeixinRefreshATKWorker
+from model import torndb
 
 __author__ = 'nekocode'
 
