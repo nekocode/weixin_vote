@@ -1,24 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import uuid
+
 import MySQLdb
-import config
-import torndb
 import tornado
 from tornado.web import Application, RequestHandler, os
-import vote_model
-from weixin_sougou import get_account_info
 
-from qiniu import Auth, set_default, etag, PersistentFop, build_op, op_save, Zone
-from qiniu import put_data, put_file, put_stream
-from qiniu import BucketManager, build_batch_copy, build_batch_rename, build_batch_move, build_batch_stat, build_batch_delete
-from qiniu import urlsafe_base64_encode, urlsafe_base64_decode
-
-from qiniu.compat import is_py2, is_py3, b
-
-from qiniu.services.storage.uploader import _form_put
-
-import qiniu.config
+import config
+from model import vote_model
+from wx_util.weixin_sougou import get_account_info
+from qiniu import Auth
+from qiniu import put_data
 
 PER_PAGE_ROWS = 20
 
@@ -73,7 +65,7 @@ class VoteAccountsHandler(BaseHandler):
             p, rows, pages = get_page_rows(int(self.get_argument('p', 1)), 'vote_accounts',
                                            'where admin_id=%d' % userid)
 
-        self.render("static/admin/vote-accounts.html", rows=rows, pages=pages, p=p)
+        self.render("admin/vote-accounts.html", rows=rows, pages=pages, p=p)
 
 
 class SubAccountsHandler(BaseHandler):
@@ -88,7 +80,7 @@ class SubAccountsHandler(BaseHandler):
         for row in rows:
             v_row = vote_model.db.get("select * from vote_accounts where app_id='%s'" % row.vote_account_id)
             row.vote_account_name = '%s (%s)' % (v_row['name'], v_row['display_id'])
-        self.render("static/admin/sub-accounts.html", rows=rows, pages=pages, p=p)
+        self.render("admin/sub-accounts.html", rows=rows, pages=pages, p=p)
 
 
 class ClassesHandler(BaseHandler):
@@ -120,7 +112,7 @@ class ClassesHandler(BaseHandler):
         p, rows, pages = get_page_rows(int(self.get_argument('p', 1)),
                                        'classes', 'where school_account_id="%s"' % sapp_id)
 
-        self.render("static/admin/classes.html", schools=schools, sid=sid, rows=rows, pages=pages, p=p)
+        self.render("admin/classes.html", schools=schools, sid=sid, rows=rows, pages=pages, p=p)
 
 
 class PeopleHandler(BaseHandler):
@@ -152,7 +144,7 @@ class PeopleHandler(BaseHandler):
         p, rows, pages = get_page_rows(int(self.get_argument('p', 1)),
                                        'voted_people', 'where school_account_id="%s"' % sapp_id)
 
-        self.render("static/admin/people.html", schools=schools, sid=sid, rows=rows, pages=pages, p=p)
+        self.render("admin/people.html", schools=schools, sid=sid, rows=rows, pages=pages, p=p)
 
 
 class LoginHandler(BaseHandler):
@@ -161,7 +153,7 @@ class LoginHandler(BaseHandler):
 
     def get(self):
         if not self.current_user:
-            self.render("static/admin/login.html")
+            self.render("admin/login.html")
 
         else:
             self.redirect('/vote_accounts', permanent=True)
@@ -201,7 +193,7 @@ class ReloadCacheHandler(BaseHandler):
             vote_model.cahe_accounts()
             self.write("部署成功")
         else:
-            self.render("static/admin/reload-cache.html")
+            self.render("admin/reload-cache.html")
 
 
 class EditHandler(BaseHandler):
@@ -345,7 +337,7 @@ class EditHandler(BaseHandler):
             self.write("404: Page not found.")
             return
 
-        self.render("static/admin/edit.html",sidebar_select=sidebar_select, title=title, rows=rows)
+        self.render("admin/edit.html",sidebar_select=sidebar_select, title=title, rows=rows)
 
     @tornado.web.authenticated
     def post(self, table):
@@ -612,7 +604,7 @@ class UploadHandler(tornado.web.RequestHandler):
         self.write(html)
 
     def post(self):
-        # __UPLOADS__ = 'static/upload/'
+        # __UPLOADS__ = 'upload/'
         fileinfo = self.request.files['filearg'][0]
 
         fname = fileinfo['filename']
@@ -636,12 +628,12 @@ class UploadHandler(tornado.web.RequestHandler):
 if __name__ == '__main__':
     vote_model.init_db()
 
-    import uimodules
+    import uimodule
     settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
         "cookie_secret": "61oETzKXQAGaYdk12345GeJJFuYh7EQnp2XdTP1o/Vo=",
         "login_url": "/login",
-        "ui_modules": uimodules,
+        "ui_modules": uimodule,
     }
 
     application = Application([

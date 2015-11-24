@@ -13,7 +13,7 @@ QINIU_AK = ''
 QINIU_SK = ''
 QINIU_BUCKET_NAME = ''
 ```
-- run `index.py`
+- run `server.py`
 
 ### feature
 - tornado

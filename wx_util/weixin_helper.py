@@ -7,9 +7,11 @@ import random
 import string
 import threading
 import time
-import httplib2
 from xml.etree import cElementTree
-from weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
+
+import httplib2
+
+from wx_util.weixin_crypt.WXBizMsgCrypt import WXBizMsgCrypt
 
 __author__ = 'nekocode'
 
