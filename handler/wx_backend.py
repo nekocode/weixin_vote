@@ -47,6 +47,8 @@ class WXAccountMsgHandler(RequestHandler):
             our = msg['ToUserName']
             text = msg['Content'].upper()
 
+            reply_msg = account.text_msg(user, our, '感谢你的留言，工作人员会尽快回复你。')
+
             if isinstance(account, VoteAccount):
                 if account.active is False:
                     self.write(account.text_msg(user, our, '本账号已关闭投票'))
