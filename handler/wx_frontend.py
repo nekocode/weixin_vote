@@ -72,7 +72,7 @@ class RankHandler(RequestHandler):
         vote_total_count = 0
         class_rank_rows = []
         person_rank_rows = []
-        for sc in school_accounts:
+        for sc in school_accounts.values():
             if sc.vote_account_id == vote_account_id:
                 vote_total_count += sc.voting_count
                 class_rank_rows.extend(sc.get_classes_rank())
