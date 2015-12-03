@@ -79,8 +79,8 @@ class RankHandler(RequestHandler):
                 person_rank_rows.extend(sc.get_person_rank())
 
         # 对列表进行排名
-        sorted(class_rank_rows, key=lambda e: e.voting_count, reverse=True)
-        sorted(person_rank_rows, key=lambda e: e.inviting_count, reverse=True)
+        class_rank_rows.sort(key=lambda e: e.voting_count, reverse=True)
+        person_rank_rows.sort(key=lambda e: e.inviting_count, reverse=True)
         person_rank_rows = person_rank_rows[:20]
 
         avatar_url = vote_accounts[vote_account_id].avatar_url
