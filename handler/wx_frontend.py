@@ -66,14 +66,27 @@ class RankHandler(RequestHandler):
             self.write('打开姿势有误 ╮(╯_╰)╭')
             return
         account = school_accounts[app_id]
-        class_rank_rows = account.get_classes_rank()
-        person_rank_rows = account.get_person_rank()
+        vote_account_id = account.vote_account_id
 
-        avatar_url = account.avatar_url
+        # 获取所有同一个大号的所有小号的排名
+        vote_total_count = 0
+        class_rank_rows = []
+        person_rank_rows = []
+        for sc in school_accounts:
+            if sc.vote_account_id == vote_account_id:
+                vote_total_count += sc.voting_count
+                class_rank_rows.extend(sc.get_classes_rank())
+                person_rank_rows.extend(sc.get_person_rank())
+
+        # 对列表进行排名
+        sorted(class_rank_rows, key=lambda e: e.voting_count, reverse=True)
+        sorted(person_rank_rows, key=lambda e: e.inviting_count, reverse=True)
+        person_rank_rows = person_rank_rows[:20]
+
+        avatar_url = vote_accounts[vote_account_id].avatar_url
         qrcode_url = config.DOMAIN + '/qrcode/' + account.app_id
         school_name = account.school_name
         class_count = len(class_rank_rows)
-        vote_total_count = account.voting_count
 
         self.render("vote/ranking.html",
                     class_rank_rows=class_rank_rows, person_rank_rows=person_rank_rows,
